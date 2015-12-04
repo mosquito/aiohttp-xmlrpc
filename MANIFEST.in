@@ -1,1 +1,1 @@
-include README.rst tornado-xmlrpc/xmlrpc.xsd
+include README.rst tornado_xmlrpc/xmlrpc.xsd

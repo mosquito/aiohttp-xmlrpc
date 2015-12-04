@@ -38,7 +38,7 @@ setup(
     version=tornado_xmlrpc.__version__,
     author=tornado_xmlrpc.__author__,
     license="MIT",
-    description="Tornado XMLRPC server and client",
+    description="Tornado XML-RPC server and client",
     long_description=open('README.rst').read(),
     platforms="all",
     classifiers=[
