@@ -23,6 +23,8 @@ XML-RPC server and client implementation based on tornado. Using lxml and AsyncH
 
 Example:
 
+.. code-block:: python
+
     from tornado_xmlrpc import handler, client
     from tornado.testing import *
 
@@ -86,3 +88,4 @@ Example:
                 self.assertIn("YEEEEEE!!!", e.message)
             else:
                 raise RuntimeError("No exception")
+
