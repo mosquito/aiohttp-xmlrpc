@@ -7,18 +7,6 @@ from tornado.web import Application
 from . import handler, client
 
 
-class AsyncHTTPTestCase(tornado.testing.AsyncHTTPTestCase):
-    _proxy = None
-
-    def setUp(self):
-        super(AsyncHTTPTestCase, self).setUp()
-        self.server = client.ServerProxy("http://localhost:%d" % self.get_http_port())
-
-    def tearDown(self):
-        super(AsyncHTTPTestCase, self).tearDown()
-        self.server = None
-
-
 class XMLRPCTestHandler(handler.XMLRPCHandler):
     def rpc_test(self):
         return None
@@ -36,7 +24,15 @@ class XMLRPCTestHandler(handler.XMLRPCHandler):
         raise Exception("YEEEEEE!!!")
 
 
-class TestSimple(AsyncHTTPTestCase):
+class TestSimple(tornado.testing.AsyncHTTPTestCase):
+    def setUp(self):
+        super(TestSimple, self).setUp()
+        self.server = client.ServerProxy("http://localhost:%d" % self.get_http_port())
+
+    def tearDown(self):
+        super(TestSimple, self).tearDown()
+        self.server = None
+
     def get_app(self):
         return Application(handlers=[
             ('/', XMLRPCTestHandler),
