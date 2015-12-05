@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # encoding: utf-8
-import pickle
 from datetime import datetime
 from lxml import etree
 from tornado_xmlrpc import PY2
