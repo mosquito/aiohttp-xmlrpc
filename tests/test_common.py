@@ -5,22 +5,27 @@ from datetime import datetime
 from lxml import etree
 from . import common
 
+try:
+    unicode
+except NameError:
+    unicode = str
+
 
 TYPES_CASES = (
-    (common.Binary("you can't read this!"), '<base64>eW91IGNhbid0IHJlYWQgdGhpcyE=</base64>'),
-    (-12.53, "<double>-12.53</double>"),
-    (u"Hello world!", u"<string>Hello world!</string>"),
+    (common.Binary("you can't read this!"), unicode('<base64>eW91IGNhbid0IHJlYWQgdGhpcyE=</base64>')),
+    (-12.53, unicode("<double>-12.53</double>")),
+    (unicode("Hello world!"), unicode("<string>Hello world!</string>")),
     (
         datetime(year=1998, month=7, day=17, hour=14, minute=8, second=55),
-        "<dateTime.iso8601>19980717T14:08:55</dateTime.iso8601>"
+        unicode("<dateTime.iso8601>19980717T14:08:55</dateTime.iso8601>")
     ),
-    (42, "<i4>42</i4>"),
-    (True, "<boolean>1</boolean>"),
-    (False, "<boolean>0</boolean>"),
-    (None, "<nil/>"),
+    (42, unicode("<i4>42</i4>")),
+    (True, unicode("<boolean>1</boolean>")),
+    (False, unicode("<boolean>0</boolean>")),
+    (None, unicode("<nil/>")),
     (
-        [1404, u'Something here', 1],
-        (
+        [1404, unicode("Something here"), 1],
+        unicode(
             "<array>"
                 "<data>"
                     "<value>"
@@ -38,7 +43,7 @@ TYPES_CASES = (
     ),
     (
         {'foo': 1, 'bar': 2},
-        (
+        unicode(
             "<struct>"
               "<member>"
                 "<name>foo</name>"
@@ -83,4 +88,4 @@ def test_py2xml_error():
     except RuntimeError:
         pass
     else:
-        raise RuntimeError("No way!!!")
+        raise RuntimeError(unicode("No way!!!"))

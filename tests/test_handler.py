@@ -41,22 +41,22 @@ class TestSimple(tornado.testing.AsyncHTTPTestCase):
     @gen_test
     def test_00_test(self):
         result = yield self.server.test()
-        self.assertIsNone(result)
+        self.assertTrue(result is None)
 
     @gen_test
     def test_10_args(self):
         result = yield self.server.args(1, 2, 3, 4, 5)
-        self.assertEqual(result, 5)
+        self.assertTrue(result == 5)
 
     @gen_test
     def test_20_kwargs(self):
         result = yield self.server.kwargs(foo=1, bar=2)
-        self.assertEqual(result, 2)
+        self.assertTrue(result == 2)
 
     @gen_test
     def test_20_kwargs(self):
         result = yield self.server.args_kwargs(1, 2, 3, 4, 5, foo=1, bar=2)
-        self.assertEqual(result, 7)
+        self.assertTrue(result == 7)
 
     @gen_test
     def test_30_exception(self):
