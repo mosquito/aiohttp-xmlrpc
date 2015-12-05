@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # encoding: utf-8
 from datetime import datetime
+from io import StringIO
+
 from lxml import etree
+import xmltodict
 from tornado_xmlrpc import PY2
 from . import common
 
@@ -72,8 +75,42 @@ TYPES_CASES = (
 )
 
 
-def check_xml(element, xml_data):
-    return etree.tostring(element).decode('utf-8') == xml_data
+def normalise_dict(d):
+    """
+    Recursively convert dict-like object (eg OrderedDict) into plain dict.
+    Sorts list values.
+    """
+    out = {}
+    for k, v in dict(d).items():
+        if hasattr(v, 'iteritems'):
+            out[k] = normalise_dict(v)
+        elif isinstance(v, list):
+            out[k] = []
+            for item in sorted(v):
+                if hasattr(item, 'iteritems'):
+                    out[k].append(normalise_dict(item))
+                else:
+                    out[k].append(item)
+        else:
+            out[k] = v
+    return out
+
+
+def check_xml(a, b):
+    """
+    Compares two XML documents (as string or etree)
+
+    Does not care about element order
+    """
+
+    if not isinstance(a, (str, unicode)):
+        a = etree.tostring(a)
+    if not isinstance(b, (str, unicode)):
+        b = etree.tostring(b)
+
+    a = normalise_dict(xmltodict.parse(a))
+    b = normalise_dict(xmltodict.parse(b))
+    return a == b
 
 
 def check_python(data, result):
