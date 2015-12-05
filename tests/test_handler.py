@@ -63,6 +63,6 @@ class TestSimple(tornado.testing.AsyncHTTPTestCase):
         try:
             yield self.server.exception()
         except client.RemoteServerException as e:
-            self.assertIn("YEEEEEE!!!", e.message)
+            self.assertTrue("YEEEEEE!!!" in e.message)
         else:
             raise RuntimeError("No exception")
