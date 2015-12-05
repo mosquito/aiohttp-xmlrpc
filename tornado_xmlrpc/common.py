@@ -17,12 +17,17 @@ except NameError:
     unicode = str
 
 try:
+    bytes
+except NameError:
+    bytes = str
+
+try:
     from types import NoneType
 except ImportError:
     NoneType = type(None)
 
 
-class Binary(str):
+class Binary(bytes):
     pass
 
 

@@ -3,7 +3,21 @@
 import pickle
 from datetime import datetime
 from lxml import etree
+from tornado_xmlrpc import PY2
 from . import common
+
+if PY2:
+    def b(s):
+        return s
+
+    def u(s):
+        return unicode(s.replace(r'\\', r'\\\\'), "unicode_escape")
+else:
+    def b(s):
+        return s.encode("latin-1")
+
+    def u(s):
+        return s
 
 try:
     unicode
@@ -12,7 +26,7 @@ except NameError:
 
 
 TYPES_CASES = (
-    (common.Binary("you can't read this!"), unicode('<base64>eW91IGNhbid0IHJlYWQgdGhpcyE=</base64>')),
+    (common.Binary(b("you can't read this!")), unicode('<base64>eW91IGNhbid0IHJlYWQgdGhpcyE=</base64>')),
     (-12.53, unicode("<double>-12.53</double>")),
     (unicode("Hello world!"), unicode("<string>Hello world!</string>")),
     (
@@ -60,11 +74,11 @@ TYPES_CASES = (
 
 
 def check_xml(element, xml_data):
-    return etree.tostring(element) == xml_data
+    return etree.tostring(element).decode('utf-8') == xml_data
 
 
 def check_python(data, result):
-    return pickle.dumps(data) == pickle.dumps(result)
+    return (str(data), repr(data)) == (str(result), repr(result))
 
 
 def checker(func, chk, data, result):

@@ -39,10 +39,10 @@ class XMLRPCHandler(RequestHandler):
                  method.__class__.__name__,
                  method.__name__)
 
-        args = map(
+        args = list(map(
             xml2py,
             xml_request.xpath('//params/param/value/*')
-        )
+        ))
 
         if args and isinstance(args[-1], dict):
             kwargs = args.pop(-1)
