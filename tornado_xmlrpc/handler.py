@@ -11,6 +11,7 @@ log = logging.getLogger(__name__)
 
 class XMLRPCHandler(RequestHandler):
     METHOD_PREFIX = "rpc_"
+    DEBUG = False
 
     @coroutine
     def post(self, *args, **kwargs):
@@ -18,7 +19,7 @@ class XMLRPCHandler(RequestHandler):
             raise HTTPError(400)
 
         try:
-            xml_request = etree.fromstring(self.request.body, SCHEMA)
+            xml_request = self._parse_xml(self.request.body)
         except etree.XMLSyntaxError:
             raise HTTPError(400)
 
@@ -77,6 +78,22 @@ class XMLRPCHandler(RequestHandler):
             log.exception(e)
 
         self.set_header("Content-Type", "text/xml; charset=utf-8")
-        xml = etree.tostring(root, xml_declaration=True, encoding="utf-8")
+        xml = self._build_xml(root)
+
+        if self.DEBUG:
+            log.debug("Sending response:\n%s", xml)
+
         self.finish(xml)
 
+    @staticmethod
+    def _parse_xml(xml_string):
+        return etree.fromstring(xml_string, SCHEMA)
+
+    @classmethod
+    def _build_xml(cls, tree):
+        return etree.tostring(
+            tree,
+            xml_declaration=True,
+            encoding="utf-8",
+            pretty_print=cls.DEBUG
+        )
