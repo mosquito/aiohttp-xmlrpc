@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # encoding: utf-8
-from datetime import datetime
-from io import StringIO
-
-from lxml import etree
 import xmltodict
+from datetime import datetime
+from lxml import etree
 from tornado_xmlrpc import PY2
 from . import common
+
 
 if PY2:
     def b(s):
