@@ -84,7 +84,7 @@
       <xsd:element name="double"        type="xsd:decimal"/>
       <xsd:element name="Base64"        type="xsd:base64Binary"/>
       <xsd:element name="boolean"       type="NumericBoolean"/>
-      <xsd:element name="dateTime.iso8601" type="xsd:dateTime"/>
+      <xsd:element name="dateTime.iso8601" type="DateTime"/>
       <xsd:element name="array"         type="ArrayType"/>
       <xsd:element name="struct"        type="StructType"/>
       <xsd:element name="nil"           type="nil"/>
@@ -121,6 +121,12 @@
    <xsd:simpleType name="ASCIIString">
     <xsd:restriction base="xsd:string">
       <xsd:pattern value="[\s\S]*" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="DateTime">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="\d{8}T\d{2}\:\d{2}\:\d{2}" />
     </xsd:restriction>
   </xsd:simpleType>
 
