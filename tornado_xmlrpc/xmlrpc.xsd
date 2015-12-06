@@ -126,7 +126,7 @@
 
   <xsd:simpleType name="DateTime">
     <xsd:restriction base="xsd:string">
-      <xsd:pattern value="\d{8}T\d{2}\:\d{2}\:\d{2}" />
+      <xsd:pattern value="\d{8}T\d{2}:\d{2}:\d{2}" />
     </xsd:restriction>
   </xsd:simpleType>
 
