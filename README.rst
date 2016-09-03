@@ -55,23 +55,27 @@ Server example
         web.run_app(app)
 
 
+
 Client example
 --------------
 
 .. code-block:: python
 
-import asyncio
-from aiohttp_xmlrpc.client import ServerProxy
+    import asyncio
+    from aiohttp_xmlrpc.client import ServerProxy
+    
 
+    loop = asyncio.get_event_loop()
+    client = ServerProxy("http://127.0.0.1:8080/", loop=loop)
 
-loop = asyncio.get_event_loop()
-client = ServerProxy("http://127.0.0.1:8000/", loop=loop)
+    async def main():
+        print(await client.test())
 
-async def main():
-    await client.test()
-    # Or via __getitem__
-    method = client['args']
-    print(await method(1, 2, 3))
+        # Or via __getitem__
+        method = client['args']
+        print(await method(1, 2, 3))
 
-if __name__ == "__main__":
-    loop.run_until_complete(main())
+        client.close()
+
+    if __name__ == "__main__":
+        loop.run_until_complete(main())
