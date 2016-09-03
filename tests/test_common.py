@@ -62,7 +62,7 @@ CASES = [
             '<struct>'
                 "<member>"
                     "<name>faultCode</name>"
-                    "<value><i4>-32500</i4></value>"
+                    "<value><i4>-32000</i4></value>"
                 "</member>"
                 "<member>"
                     "<name>faultString</name>"

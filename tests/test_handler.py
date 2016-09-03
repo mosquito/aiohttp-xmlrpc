@@ -3,7 +3,7 @@ import asyncio
 import pytest
 from aiohttp import web
 from aiohttp_xmlrpc import handler
-from aiohttp_xmlrpc.client import RemoteServerException
+from aiohttp_xmlrpc.exceptions import ApplicationError
 
 pytest_plugins = (
     'aiohttp.pytest_plugin',
@@ -65,5 +65,11 @@ def test_4_kwargs(client):
 
 @asyncio.coroutine
 def test_5_exception(client):
-    with pytest.raises(RemoteServerException):
+    with pytest.raises(Exception):
         yield from client.exception()
+
+
+@asyncio.coroutine
+def test_6_unknown_method(client):
+    with pytest.raises(ApplicationError):
+        yield from client['unknown_method']()

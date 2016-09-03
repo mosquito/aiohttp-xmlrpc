@@ -21,15 +21,17 @@ AIOHTTP XMLRPC
 XML-RPC server and client implementation based on aiohttp. Using lxml and aiohttp.Client.
 
 
-Example:
+Server example
+---------------
 
 .. code-block:: python
 
-    from aiohttp_xmlrpc import handler, client
+    from aiohttp import web
+    from aiohttp_xmlrpc import handler
     from tornado.testing import *
 
 
-    class XMLRPCTestHandler(handler.XMLRPCHandler):
+    class XMLRPCExample(handler.XMLRPCView):
         def rpc_test(self):
             return None
 
@@ -46,46 +48,30 @@ Example:
             raise Exception("YEEEEEE!!!")
 
 
-    class TestSimple(tornado.testing.AsyncHTTPTestCase):
-        def setUp(self):
-            super(TestSimple, self).setUp()
-            self.server = client.ServerProxy("http://localhost:%d" % self.get_http_port())
+    app = web.Application()
+    app.router.add_route('*', '/', XMLRPCExample)
 
-        def tearDown(self):
-            super(TestSimple, self).tearDown()
-            self.server = None
+    if __name__ == "__main__":
+        web.run_app(app)
 
-        def get_app(self):
-            return Application(handlers=[
-                ('/', XMLRPCTestHandler),
-            ])
 
-        @gen_test
-        def test_00_test(self):
-            result = yield self.server.test()
-            self.assertIsNone(result)
+Client example
+--------------
 
-        @gen_test
-        def test_10_args(self):
-            result = yield self.server.args(1, 2, 3, 4, 5)
-            self.assertEqual(result, 5)
+.. code-block:: python
 
-        @gen_test
-        def test_20_kwargs(self):
-            result = yield self.server.kwargs(foo=1, bar=2)
-            self.assertEqual(result, 2)
+import asyncio
+from aiohttp_xmlrpc.client import ServerProxy
 
-        @gen_test
-        def test_20_kwargs(self):
-            result = yield self.server.args_kwargs(1, 2, 3, 4, 5, foo=1, bar=2)
-            self.assertEqual(result, 7)
 
-        @gen_test
-        def test_30_exception(self):
-            try:
-                yield self.server.exception()
-            except client.RemoteServerException as e:
-                self.assertIn("YEEEEEE!!!", e.message)
-            else:
-                raise RuntimeError("No exception")
+loop = asyncio.get_event_loop()
+client = ServerProxy("http://127.0.0.1:8000/", loop=loop)
 
+async def main():
+    await client.test()
+    # Or via __getitem__
+    method = client['args']
+    print(await method(1, 2, 3))
+
+if __name__ == "__main__":
+    loop.run_until_complete(main())

@@ -2,7 +2,8 @@
 import asyncio
 import aiohttp.client
 from lxml import etree
-from . import __version__, __pyversion__
+from . import __version__, __pyversion__, exceptions
+from .exceptions import xml2py_exception
 from .common import py2xml, xml2py, schema
 
 
@@ -21,10 +22,10 @@ class ServerProxy(object):
 
     USER_AGENT = u'aiohttp XML-RPC client (Python: {0}, version: {1})'.format(__pyversion__, __version__)
 
-    def __init__(self, url, client=None, loop=None):
+    def __init__(self, url, client=None, loop=None, **kwargs):
         self.url = str(url)
         self.loop = loop or asyncio.get_event_loop()
-        self.client = client or aiohttp.client.ClientSession(loop=self.loop)
+        self.client = client or aiohttp.client.ClientSession(loop=self.loop, **kwargs)
 
     @staticmethod
     def _make_request(method_name, *args, **kwargs):
@@ -57,7 +58,7 @@ class ServerProxy(object):
     def _parse_response(body, method_name):
         try:
             response = etree.fromstring(body, schema())
-        except etree.XMLSyntaxError as e:
+        except etree.XMLSyntaxError:
             raise ValueError("Invalid body")
 
         result = response.xpath('//params/param/value/*')
@@ -67,7 +68,12 @@ class ServerProxy(object):
         fault = response.xpath('//fault/value/*')
         if fault:
             err = xml2py(fault[0])
-            raise RemoteServerException(err.get('faultString'), err.get('faultCode'))
+
+            raise xml2py_exception(
+                err.get('faultCode', exceptions.SystemError.code),
+                err.get('faultString', 'Unknown error'),
+                default_exc_class=exceptions.ServerError
+            )
 
         raise InvalidResponse('Respond body of method "%s" not contains any response.', method_name)
 
@@ -96,3 +102,6 @@ class ServerProxy(object):
             return self.__remote_call(method_name, *args, **kwargs)
 
         return method
+
+    def close(self):
+        return self.client.close()

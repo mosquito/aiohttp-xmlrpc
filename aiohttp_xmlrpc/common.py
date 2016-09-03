@@ -5,7 +5,6 @@ from datetime import datetime
 from functools import singledispatch
 from types import GeneratorType
 from lxml import etree
-from .exceptions import xml_exception
 
 
 NoneType = type(None)
@@ -93,27 +92,6 @@ def _(value):
 @py2xml.register(NoneType)
 def _(value):
     return etree.Element('nil')
-
-
-@py2xml.register(Exception)
-def _(value):
-    code, reason = xml_exception(value)
-    struct = etree.Element('struct')
-
-    for key, value in (("faultCode", code), ("faultString", reason)):
-        member = etree.Element('member')
-        struct.append(member)
-
-        key_el = etree.Element('name')
-        key_el.text = key
-        member.append(key_el)
-
-        value_el = etree.Element('value')
-        value_el.append(py2xml(value))
-        member.append(value_el)
-
-    # struct.attrib['error'] = '1'
-    return struct
 
 
 @py2xml.register(list)
