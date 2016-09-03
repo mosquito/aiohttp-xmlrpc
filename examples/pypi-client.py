@@ -19,7 +19,7 @@ async def main():
 
     print("User", user, "has packages")
 
-    for role, package in sorted(packages[::3]):
+    for role, package in sorted(filter(lambda x: isinstance(x, list), packages)):
         print("\t%r (role %r)" % (package, role))
 
     client.close()
