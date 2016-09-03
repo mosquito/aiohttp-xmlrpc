@@ -63,7 +63,7 @@ Client example
 
     import asyncio
     from aiohttp_xmlrpc.client import ServerProxy
-    
+
 
     loop = asyncio.get_event_loop()
     client = ServerProxy("http://127.0.0.1:8080/", loop=loop)

@@ -1,20 +1,14 @@
 # encoding: utf-8
 import asyncio
 import aiohttp.client
+import logging
 from lxml import etree
 from . import __version__, __pyversion__, exceptions
 from .exceptions import xml2py_exception
 from .common import py2xml, xml2py, schema
 
 
-class RemoteServerException(Exception):
-    def __init__(self, message, code=-32500):
-        Exception.__init__(self, message)
-        self.code = code
-
-
-class InvalidResponse(Exception):
-    pass
+log = logging.getLogger(__name__)
 
 
 class ServerProxy(object):
@@ -57,6 +51,9 @@ class ServerProxy(object):
     @staticmethod
     def _parse_response(body, method_name):
         try:
+            if log.getEffectiveLevel() <= logging.DEBUG:
+                log.debug("Server response: \n%s", body.decode())
+
             response = etree.fromstring(body, schema())
         except etree.XMLSyntaxError:
             raise ValueError("Invalid body")
@@ -75,7 +72,8 @@ class ServerProxy(object):
                 default_exc_class=exceptions.ServerError
             )
 
-        raise InvalidResponse('Respond body of method "%s" not contains any response.', method_name)
+        raise exceptions.ParseError('Respond body for method "%s" '
+                                    'not contains any response.', method_name)
 
     @asyncio.coroutine
     def __remote_call(self, method_name, *args, **kwargs):
