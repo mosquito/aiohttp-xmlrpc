@@ -28,16 +28,24 @@ except NameError:
 
 TYPES_CASES = (
     (common.Binary(b("you can't read this!")), unicode('<base64>eW91IGNhbid0IHJlYWQgdGhpcyE=</base64>')),
+
     (-12.53, unicode("<double>-12.53</double>")),
+
     (unicode("Hello world!"), unicode("<string>Hello world!</string>")),
+
     (
         datetime(year=1998, month=7, day=17, hour=14, minute=8, second=55),
         unicode("<dateTime.iso8601>19980717T14:08:55</dateTime.iso8601>")
     ),
+
     (42, unicode("<i4>42</i4>")),
+
     (True, unicode("<boolean>1</boolean>")),
+
     (False, unicode("<boolean>0</boolean>")),
+
     (None, unicode("<nil/>")),
+
     (
         [1404, unicode("Something here"), 1],
         unicode(
@@ -56,21 +64,19 @@ TYPES_CASES = (
             "</array>"
         )
     ),
+
     (
-        {'foo': 1, 'bar': 2},
+        {'foo': 1},
         unicode(
             "<struct>"
               "<member>"
                 "<name>foo</name>"
                 "<value><i4>1</i4></value>"
               "</member>"
-              "<member>"
-                "<name>bar</name>"
-                "<value><i4>2</i4></value>"
-              "</member>"
             "</struct>"
         )
     ),
+
 )
 
 
