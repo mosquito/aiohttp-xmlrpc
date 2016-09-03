@@ -1,31 +1,31 @@
-Tornado XMLRPC
+AIOHTTP XMLRPC
 ==============
 
-.. image:: https://travis-ci.org/mosquito/tornado-xmlrpc.svg
-    :target: https://travis-ci.org/mosquito/tornado-xmlrpc
+.. image:: https://travis-ci.org/mosquito/aiohttp-xmlrpc.svg
+    :target: https://travis-ci.org/mosquito/aiohttp-xmlrpc
 
-.. image:: https://img.shields.io/pypi/v/tornado-xmlrpc.svg
-    :target: https://pypi.python.org/pypi/tornado-xmlrpc/
+.. image:: https://img.shields.io/pypi/v/aiohttp-xmlrpc.svg
+    :target: https://pypi.python.org/pypi/aiohttp-xmlrpc/
     :alt: Latest Version
 
-.. image:: https://img.shields.io/pypi/wheel/tornado-xmlrpc.svg
-    :target: https://pypi.python.org/pypi/tornado-xmlrpc/
+.. image:: https://img.shields.io/pypi/wheel/aiohttp-xmlrpc.svg
+    :target: https://pypi.python.org/pypi/aiohttp-xmlrpc/
 
-.. image:: https://img.shields.io/pypi/pyversions/tornado-xmlrpc.svg
-    :target: https://pypi.python.org/pypi/tornado-xmlrpc/
+.. image:: https://img.shields.io/pypi/pyversions/aiohttp-xmlrpc.svg
+    :target: https://pypi.python.org/pypi/aiohttp-xmlrpc/
 
-.. image:: https://img.shields.io/pypi/l/tornado-xmlrpc.svg
-    :target: https://pypi.python.org/pypi/tornado-xmlrpc/
+.. image:: https://img.shields.io/pypi/l/aiohttp-xmlrpc.svg
+    :target: https://pypi.python.org/pypi/aiohttp-xmlrpc/
 
 
-XML-RPC server and client implementation based on tornado. Using lxml and AsyncHttpClient.
+XML-RPC server and client implementation based on aiohttp. Using lxml and aiohttp.Client.
 
 
 Example:
 
 .. code-block:: python
 
-    from tornado_xmlrpc import handler, client
+    from aiohttp_xmlrpc import handler, client
     from tornado.testing import *
 
 

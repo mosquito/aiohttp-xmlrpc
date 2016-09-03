@@ -1,54 +1,33 @@
-#!/usr/bin/env python
-# encoding: utf-8
 import xmltodict
+import pytest
 from datetime import datetime
 from lxml import etree
-from tornado_xmlrpc import PY2
-from . import common
+from aiohttp_xmlrpc.common import py2xml, xml2py, Binary
 
 
-if PY2:
-    def b(s):
-        return s
+CASES = [
+    (Binary("you can't read this!".encode()), '<base64>eW91IGNhbid0IHJlYWQgdGhpcyE=</base64>'),
 
-    def u(s):
-        return unicode(s.replace(r'\\', r'\\\\'), "unicode_escape")
-else:
-    def b(s):
-        return s.encode("latin-1")
+    (-12.53, "<double>-12.53</double>"),
 
-    def u(s):
-        return s
-
-try:
-    unicode
-except NameError:
-    unicode = str
-
-
-TYPES_CASES = (
-    (common.Binary(b("you can't read this!")), unicode('<base64>eW91IGNhbid0IHJlYWQgdGhpcyE=</base64>')),
-
-    (-12.53, unicode("<double>-12.53</double>")),
-
-    (unicode("Hello world!"), unicode("<string>Hello world!</string>")),
+    ("Hello world!", "<string>Hello world!</string>"),
 
     (
         datetime(year=1998, month=7, day=17, hour=14, minute=8, second=55),
-        unicode("<dateTime.iso8601>19980717T14:08:55</dateTime.iso8601>")
+        "<dateTime.iso8601>19980717T14:08:55</dateTime.iso8601>"
     ),
 
-    (42, unicode("<i4>42</i4>")),
+    (42, "<i4>42</i4>"),
 
-    (True, unicode("<boolean>1</boolean>")),
+    (True, "<boolean>1</boolean>"),
 
-    (False, unicode("<boolean>0</boolean>")),
+    (False, "<boolean>0</boolean>"),
 
-    (None, unicode("<nil/>")),
+    (None, "<nil/>"),
 
     (
-        [1404, unicode("Something here"), 1],
-        unicode(
+        [1404, "Something here", 1],
+        (
             "<array>"
                 "<data>"
                     "<value>"
@@ -67,7 +46,7 @@ TYPES_CASES = (
 
     (
         {'foo': 1},
-        unicode(
+        (
             "<struct>"
               "<member>"
                 "<name>foo</name>"
@@ -77,7 +56,22 @@ TYPES_CASES = (
         )
     ),
 
-)
+    (
+        RuntimeWarning('Test exception'),
+        (
+            '<struct>'
+                "<member>"
+                    "<name>faultCode</name>"
+                    "<value><i4>-32500</i4></value>"
+                "</member>"
+                "<member>"
+                    "<name>faultString</name>"
+                    "<value><string>RuntimeWarning('Test exception',)</string></value>"
+                "</member>"
+            "</struct>"
+        )
+    )
+]
 
 
 def normalise_dict(d):
@@ -101,46 +95,23 @@ def normalise_dict(d):
     return out
 
 
-def check_xml(a, b):
-    """
-    Compares two XML documents (as string or etree)
-
-    Does not care about element order
-    """
-
-    if not isinstance(a, (str, unicode)):
-        a = etree.tostring(a)
-    if not isinstance(b, (str, unicode)):
-        b = etree.tostring(b)
-
-    a = normalise_dict(xmltodict.parse(a))
-    b = normalise_dict(xmltodict.parse(b))
-    return a == b
+@pytest.mark.parametrize("expected,data", CASES)
+def test_xml2py(expected, data):
+    data = etree.fromstring(data)
+    return (str(data), repr(data)) == (str(expected), repr(expected))
 
 
-def check_python(data, result):
-    return (str(data), repr(data)) == (str(result), repr(result))
+@pytest.mark.parametrize("data,expected", CASES)
+def test_py2xml(data, expected):
+    a = py2xml(data)
+    b = expected
 
+    if not isinstance(a, str):
+        a = etree.tostring(a, encoding='utf-8')
+    if not isinstance(b, str):
+        b = etree.tostring(b, encoding='utf-8')
 
-def checker(func, chk, data, result):
-    assert chk(func(data), result)
+    _a = normalise_dict(xmltodict.parse(a))
+    _b = normalise_dict(xmltodict.parse(b))
 
-
-def test_py2xml_gen():
-    for data, result in TYPES_CASES:
-        yield checker, common.PY2XML_TYPES[type(data)], check_xml, data, result
-
-
-def test_xml2py_gen():
-    for result, data in TYPES_CASES:
-        data = etree.fromstring(data)
-        yield checker, common.XML2PY_TYPES[data.tag], check_python, data, result
-
-
-def test_py2xml_error():
-    try:
-        common.py2xml(Exception)
-    except RuntimeError:
-        pass
-    else:
-        raise RuntimeError(unicode("No way!!!"))
+    assert _a == _b, "\n %s \n not equal \n %s" % (a.decode(), b)

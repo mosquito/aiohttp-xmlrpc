@@ -1,49 +1,57 @@
 # encoding: utf-8
 import logging
-from tornado.gen import coroutine, maybe_future
-from tornado.web import RequestHandler, HTTPError
+import asyncio
+from aiohttp.web import View, Response, HTTPBadRequest, HTTPNotFound
 from lxml import etree
-from .common import get_schema, xml2py, py2xml
+from .common import schema, xml2py, py2xml
 
 
 log = logging.getLogger(__name__)
 
 
-class XMLRPCHandler(RequestHandler):
+class XMLRPCView(View):
     METHOD_PREFIX = "rpc_"
     DEBUG = False
 
-    @coroutine
+    @asyncio.coroutine
     def post(self, *args, **kwargs):
         if 'xml' not in self.request.headers.get('Content-Type', ''):
-            raise HTTPError(400)
+            raise HTTPBadRequest
+
+        body = yield from self.request.read()
 
         try:
-            xml_request = self._parse_xml(self.request.body)
+            xml_request = self._parse_xml(body)
         except etree.XMLSyntaxError:
-            raise HTTPError(400)
+            raise HTTPBadRequest
 
         method_name = xml_request.xpath('//methodName[1]')[0].text
         method = getattr(self, "{0}{1}".format(self.METHOD_PREFIX, method_name), None)
 
         if not callable(method):
-            log.warning("Can't find method %s%s in ",
-                        self.METHOD_PREFIX,
-                        method_name,
-                        self.__class__.__name__)
+            log.warning(
+                "Can't find method %s%s in %r",
+                self.METHOD_PREFIX,
+                method_name,
+                self.__class__.__name__
+            )
 
-            raise HTTPError(404)
+            raise HTTPNotFound
 
-        log.info("RPC Call: %s => %s.%s.%s",
-                 method_name,
-                 method.__module__,
-                 method.__class__.__name__,
-                 method.__name__)
+        log.info(
+            "RPC Call: %s => %s.%s.%s",
+            method_name,
+            method.__module__,
+            method.__class__.__name__,
+            method.__name__
+        )
 
-        args = list(map(
-            xml2py,
-            xml_request.xpath('//params/param/value/*')
-        ))
+        args = list(
+            map(
+                xml2py,
+                xml_request.xpath('//params/param/value/*')
+            )
+        )
 
         if args and isinstance(args[-1], dict):
             kwargs = args.pop(-1)
@@ -59,7 +67,7 @@ class XMLRPCHandler(RequestHandler):
             el_params.append(el_param)
             root.append(el_params)
 
-            result = yield maybe_future(method(*args, **kwargs))
+            result = yield from asyncio.coroutine(method)(*args, **kwargs)
 
             el_value.append(py2xml(result))
         except Exception as e:
@@ -68,26 +76,25 @@ class XMLRPCHandler(RequestHandler):
             xml_value = etree.Element('value')
 
             root.append(xml_fault)
-            xml_fault.append(xml_value)
 
-            xml_value.append(py2xml({
-                "faultCode": getattr(e, 'code', -32500),
-                "faultString": repr(e),
-            }))
+            xml_fault.append(xml_value)
+            xml_value.append(py2xml(e))
 
             log.exception(e)
 
-        self.set_header("Content-Type", "text/xml; charset=utf-8")
+        response = Response()
+        response.headers["Content-Type"] = "text/xml; charset=utf-8"
+
         xml = self._build_xml(root)
 
-        if self.DEBUG:
-            log.debug("Sending response:\n%s", xml)
+        log.debug("Sending response:\n%s", xml)
 
-        self.finish(xml)
+        response.body = xml
+        return response
 
     @staticmethod
     def _parse_xml(xml_string):
-        return etree.fromstring(xml_string, get_schema())
+        return etree.fromstring(xml_string, schema())
 
     @classmethod
     def _build_xml(cls, tree):

@@ -1,13 +1,17 @@
-#!/usr/bin/env python
-# encoding: utf-8
-import tornado.testing
-from tornado.testing import gen_test
-from tornado.web import Application
+import asyncio
 
-from . import handler, client
+import pytest
+from aiohttp import web
+from aiohttp_xmlrpc import handler
+from aiohttp_xmlrpc.client import RemoteServerException
+
+pytest_plugins = (
+    'aiohttp.pytest_plugin',
+    'aiohttp_xmlrpc.pytest_plugin',
+)
 
 
-class XMLRPCTestHandler(handler.XMLRPCHandler):
+class XMLRPCMain(handler.XMLRPCView):
     def rpc_test(self):
         return None
 
@@ -24,45 +28,42 @@ class XMLRPCTestHandler(handler.XMLRPCHandler):
         raise Exception("YEEEEEE!!!")
 
 
-class TestSimple(tornado.testing.AsyncHTTPTestCase):
-    def setUp(self):
-        super(TestSimple, self).setUp()
-        self.server = client.ServerProxy("http://localhost:%d" % self.get_http_port())
+def create_app(loop):
+    app = web.Application(loop=loop)
+    app.router.add_route('*', '/', XMLRPCMain)
+    return app
 
-    def tearDown(self):
-        super(TestSimple, self).tearDown()
-        self.server = None
 
-    def get_app(self):
-        return Application(handlers=[
-            ('/', XMLRPCTestHandler),
-        ])
+@pytest.fixture
+def client(loop, test_rpc_client):
+    return loop.run_until_complete(test_rpc_client(create_app))
 
-    @gen_test
-    def test_00_test(self):
-        result = yield self.server.test()
-        self.assertTrue(result is None)
 
-    @gen_test
-    def test_10_args(self):
-        result = yield self.server.args(1, 2, 3, 4, 5)
-        self.assertTrue(result == 5)
+@asyncio.coroutine
+def test_1_test(client):
+    result = yield from client.test()
+    assert result is None
 
-    @gen_test
-    def test_20_kwargs(self):
-        result = yield self.server.kwargs(foo=1, bar=2)
-        self.assertTrue(result == 2)
 
-    @gen_test
-    def test_20_kwargs(self):
-        result = yield self.server.args_kwargs(1, 2, 3, 4, 5, foo=1, bar=2)
-        self.assertTrue(result == 7)
+@asyncio.coroutine
+def test_2_args(client):
+    result = yield from client.args(1, 2, 3, 4, 5)
+    assert result == 5
 
-    @gen_test
-    def test_30_exception(self):
-        try:
-            yield self.server.exception()
-        except client.RemoteServerException as e:
-            self.assertTrue("YEEEEEE!!!" in str(e))
-        else:
-            raise RuntimeError("No exception")
+
+@asyncio.coroutine
+def test_3_kwargs(client):
+    result = yield from client.kwargs(foo=1, bar=2)
+    assert result == 2
+
+
+@asyncio.coroutine
+def test_4_kwargs(client):
+    result = yield from client.args_kwargs(1, 2, 3, 4, 5, foo=1, bar=2)
+    assert result == 7
+
+
+@asyncio.coroutine
+def test_5_exception(client):
+    with pytest.raises(RemoteServerException):
+        yield from client.exception()

@@ -1,1 +1,2 @@
-include README.rst tornado_xmlrpc/xmlrpc.xsd
+recursive-include aiohttp_xmlrpc *.xsd
+include README.rst

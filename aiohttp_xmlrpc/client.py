@@ -1,11 +1,9 @@
 # encoding: utf-8
+import asyncio
+import aiohttp.client
 from lxml import etree
-from tornado.gen import coroutine, Return
-from tornado.httpclient import AsyncHTTPClient, HTTPRequest
-from tornado.ioloop import IOLoop
-
 from . import __version__, __pyversion__
-from .common import py2xml, xml2py, get_schema
+from .common import py2xml, xml2py, schema
 
 
 class RemoteServerException(Exception):
@@ -19,11 +17,14 @@ class InvalidResponse(Exception):
 
 
 class ServerProxy(object):
-    USER_AGENT = u'Tornado XML-RPC (Python: {0}, version: {1})'.format(__pyversion__, __version__)
+    __slots__ = 'client', 'url', 'loop'
 
-    def __init__(self, url, http_client=None):
+    USER_AGENT = u'aiohttp XML-RPC client (Python: {0}, version: {1})'.format(__pyversion__, __version__)
+
+    def __init__(self, url, client=None, loop=None):
         self.url = str(url)
-        self.client = http_client or AsyncHTTPClient(IOLoop.current())
+        self.loop = loop or asyncio.get_event_loop()
+        self.client = client or aiohttp.client.ClientSession(loop=self.loop)
 
     @staticmethod
     def _make_request(method_name, *args, **kwargs):
@@ -55,7 +56,7 @@ class ServerProxy(object):
     @staticmethod
     def _parse_response(body, method_name):
         try:
-            response = etree.fromstring(body, get_schema())
+            response = etree.fromstring(body, schema())
         except etree.XMLSyntaxError as e:
             raise ValueError("Invalid body")
 
@@ -70,24 +71,28 @@ class ServerProxy(object):
 
         raise InvalidResponse('Respond body of method "%s" not contains any response.', method_name)
 
-    @coroutine
+    @asyncio.coroutine
     def __remote_call(self, method_name, *args, **kwargs):
-        req = HTTPRequest(
+        response = yield from self.client.post(
             str(self.url),
-            method='POST',
-            body=etree.tostring(self._make_request(method_name, *args, **kwargs), xml_declaration=True),
+            data=etree.tostring(
+                self._make_request(
+                    method_name, *args, **kwargs
+                ), xml_declaration=True
+            ),
             headers={
                 'Content-Type': u'text/xml',
                 'User-Agent': self.USER_AGENT
             }
         )
-        response = yield self.client.fetch(req)
 
-        raise Return(self._parse_response(response.body, method_name))
+        return self._parse_response((yield from response.read()), method_name)
 
     def __getattr__(self, method_name):
+        return self[method_name]
+
+    def __getitem__(self, method_name):
         def method(*args, **kwargs):
             return self.__remote_call(method_name, *args, **kwargs)
 
-        method.__name__ = method_name
         return method
