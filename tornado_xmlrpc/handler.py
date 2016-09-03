@@ -3,7 +3,7 @@ import logging
 from tornado.gen import coroutine, maybe_future
 from tornado.web import RequestHandler, HTTPError
 from lxml import etree
-from .common import SCHEMA, xml2py, py2xml
+from .common import get_schema, xml2py, py2xml
 
 
 log = logging.getLogger(__name__)
@@ -87,7 +87,7 @@ class XMLRPCHandler(RequestHandler):
 
     @staticmethod
     def _parse_xml(xml_string):
-        return etree.fromstring(xml_string, SCHEMA)
+        return etree.fromstring(xml_string, get_schema())
 
     @classmethod
     def _build_xml(cls, tree):

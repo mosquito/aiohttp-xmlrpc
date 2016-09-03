@@ -36,7 +36,12 @@ PY2XML_TYPES = {}
 XML2PY_TYPES = {}
 
 
-SCHEMA = etree.XMLParser(schema=etree.XMLSchema(file=os.path.join(CURRENT_DIR, 'xmlrpc.xsd')))
+def get_schema():
+    return etree.XMLParser(
+        schema=etree.XMLSchema(
+            file=os.path.join(CURRENT_DIR, 'xmlrpc.xsd')
+        )
+    )
 
 
 def py2xml(result):
@@ -168,4 +173,4 @@ XML2PY_TYPES.update({
 })
 
 
-__all__ = ('py2xml', 'xml2py', 'SCHEMA')
+__all__ = ('py2xml', 'xml2py', 'get_schema')

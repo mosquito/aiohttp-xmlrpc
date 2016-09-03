@@ -5,7 +5,7 @@ from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 from tornado.ioloop import IOLoop
 
 from . import __version__, __pyversion__
-from .common import py2xml, xml2py, SCHEMA
+from .common import py2xml, xml2py, get_schema
 
 
 class RemoteServerException(Exception):
@@ -55,7 +55,7 @@ class ServerProxy(object):
     @staticmethod
     def _parse_response(body, method_name):
         try:
-            response = etree.fromstring(body, SCHEMA)
+            response = etree.fromstring(body, get_schema())
         except etree.XMLSyntaxError as e:
             raise ValueError("Invalid body")
 
