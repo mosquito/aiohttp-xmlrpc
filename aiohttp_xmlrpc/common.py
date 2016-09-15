@@ -137,8 +137,8 @@ def xml2py(value):
             map(
                 lambda x: (x[0].text, x[1]),
                 zip(
-                    p.xpath(".//member/name"),
-                    map(xml2py, p.xpath(".//member/value/*"))
+                    p.xpath("./member/name"),
+                    map(xml2py, p.xpath("./member/value/*"))
                 )
             )
         )
