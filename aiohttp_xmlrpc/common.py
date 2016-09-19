@@ -17,19 +17,13 @@ TIME_FORMAT = "%Y%m%dT%H:%M:%S"
 PY2XML_TYPES = {}
 XML2PY_TYPES = {}
 
+schema = etree.RelaxNG(file=os.path.join(CURRENT_DIR, 'xmlrpc.rng'))
+
 
 class Binary(bytes):
     @classmethod
     def fromstring(cls, data):
         return cls(base64.b64decode(data))
-
-
-def schema():
-    return etree.XMLParser(
-        schema=etree.XMLSchema(
-            file=os.path.join(CURRENT_DIR, 'xmlrpc.xsd')
-        )
-    )
 
 
 @singledispatch
@@ -160,6 +154,8 @@ def xml2py(value):
         'nil': lambda x: None,
     })
 
+    if isinstance(value, str):
+        return value
     return XML2PY_TYPES.get(value.tag)(value)
 
 

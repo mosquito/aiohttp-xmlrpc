@@ -54,8 +54,9 @@ class ServerProxy(object):
             if log.getEffectiveLevel() <= logging.DEBUG:
                 log.debug("Server response: \n%s", body.decode())
 
-            response = etree.fromstring(body, schema())
-        except etree.XMLSyntaxError:
+            response = etree.fromstring(body)
+            schema.assertValid(response)
+        except etree.DocumentInvalid:
             raise ValueError("Invalid body")
 
         result = response.xpath('//params/param/value/*')

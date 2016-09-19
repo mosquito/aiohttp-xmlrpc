@@ -37,7 +37,7 @@ class XMLRPCView(View):
     def _parse_body(self, body):
         try:
             return self._parse_xml(body)
-        except etree.XMLSyntaxError:
+        except etree.DocumentInvalid:
             raise HTTPBadRequest
 
     def _lookup_method(self, method_name):
@@ -76,7 +76,9 @@ class XMLRPCView(View):
         args = list(
             map(
                 xml2py,
-                xml_request.xpath('//params/param/value/*')
+                xml_request.xpath(
+                    '//params/param/value/* | //params/param/value/text()'
+                )
             )
         )
 
@@ -113,7 +115,9 @@ class XMLRPCView(View):
 
     @staticmethod
     def _parse_xml(xml_string):
-        return etree.fromstring(xml_string, schema())
+        root = etree.fromstring(xml_string)
+        schema.assertValid(root)
+        return root
 
     @classmethod
     def _build_xml(cls, tree):
