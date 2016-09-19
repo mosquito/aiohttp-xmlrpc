@@ -4,6 +4,9 @@ import pytest
 from aiohttp import web
 from aiohttp_xmlrpc import handler
 from aiohttp_xmlrpc.exceptions import ApplicationError
+from lxml import etree
+from lxml.builder import E
+
 
 pytest_plugins = (
     'aiohttp.pytest_plugin',
@@ -26,6 +29,9 @@ class XMLRPCMain(handler.XMLRPCView):
 
     def rpc_exception(self):
         raise Exception("YEEEEEE!!!")
+
+    def rpc_strings(self, s1, s2):
+        return s1 == s2
 
 
 def create_app(loop):
@@ -73,3 +79,31 @@ def test_5_exception(client):
 def test_6_unknown_method(client):
     with pytest.raises(ApplicationError):
         yield from client['unknown_method']()
+
+
+@asyncio.coroutine
+def test_7_strings(test_client):
+    request = E.methodCall(
+        E.methodName('strings'),
+        E.params(
+            E.param(
+                E.value('Some string')
+            ),
+            E.param(
+                E.value(
+                    E.string('Some string')
+                )
+            )
+        )
+    )
+    client = yield from test_client(create_app)
+
+    resp = yield from client.post(
+        '/',
+        data=etree.tostring(request, xml_declaration=True),
+        headers={'Content-Type': 'text/xml'}
+    )
+    assert resp.status == 200
+
+    root = etree.fromstring((yield from resp.read()))
+    assert root.xpath('//value/boolean/text()')[0] == '1'
