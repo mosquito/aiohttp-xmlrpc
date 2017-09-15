@@ -17,21 +17,24 @@ class XMLRPCView(View):
     @asyncio.coroutine
     def post(self, *args, **kwargs):
         try:
-            root = yield from self._handle()
+            xml_response = yield from self._handle()
         except HTTPError:
             raise
         except Exception as e:
-            root = self.__format_error(e)
+            xml_response = self._format_error(e)
             log.exception(e)
 
+        return self._make_response(xml_response)
+
+    def _make_response(self, xml_response):
         response = Response()
         response.headers["Content-Type"] = "text/xml; charset=utf-8"
 
-        xml = self._build_xml(root)
+        xml_data = self._build_xml(xml_response)
 
-        log.debug("Sending response:\n%s", xml)
+        log.debug("Sending response:\n%s", xml_data)
 
-        response.body = xml
+        response.body = xml_data
         return response
 
     def _parse_body(self, body):
@@ -87,31 +90,30 @@ class XMLRPCView(View):
         else:
             kwargs = {}
 
-        root = etree.Element("methodResponse")
-        el_params = etree.Element("params")
-        el_param = etree.Element("param")
-        el_value = etree.Element("value")
-        el_param.append(el_value)
-        el_params.append(el_param)
-        root.append(el_params)
-
         result = yield from asyncio.coroutine(method)(*args, **kwargs)
+        return self._format_success(result)
 
-        el_value.append(py2xml(result))
+    def _format_success(self, result):
+        xml_response = etree.Element("methodResponse")
+        xml_params = etree.Element("params")
+        xml_param = etree.Element("param")
+        xml_value = etree.Element("value")
 
-        return root
+        xml_value.append(py2xml(result))
+        xml_param.append(xml_value)
+        xml_params.append(xml_param)
+        xml_response.append(xml_params)
+        return xml_response
 
-    def __format_error(self, exception: Exception):
-        root = etree.Element('methodResponse')
+    def _format_error(self, exception: Exception):
+        xml_response = etree.Element('methodResponse')
         xml_fault = etree.Element('fault')
         xml_value = etree.Element('value')
 
-        root.append(xml_fault)
-
-        xml_fault.append(xml_value)
         xml_value.append(py2xml(exception))
-
-        return root
+        xml_fault.append(xml_value)
+        xml_response.append(xml_fault)
+        return xml_response
 
     @staticmethod
     def _parse_xml(xml_string):
