@@ -107,3 +107,31 @@ def test_7_strings(test_client):
 
     root = etree.fromstring((yield from resp.read()))
     assert root.xpath('//value/boolean/text()')[0] == '1'
+
+
+@asyncio.coroutine
+def test_8_strings_pretty(test_client):
+    request = E.methodCall(
+        E.methodName('strings'),
+        E.params(
+            E.param(
+                E.value('Some string')
+            ),
+            E.param(
+                E.value(
+                    E.string('Some string')
+                )
+            )
+        )
+    )
+    client = yield from test_client(create_app)
+
+    resp = yield from client.post(
+        '/',
+        data=etree.tostring(request, xml_declaration=True, pretty_print=True),
+        headers={'Content-Type': 'text/xml'}
+    )
+    assert resp.status == 200
+
+    root = etree.fromstring((yield from resp.read()))
+    assert root.xpath('//value/boolean/text()')[0] == '1'
