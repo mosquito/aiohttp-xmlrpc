@@ -141,7 +141,7 @@ def xml2py(value):
         return list(map(xml2py, p.xpath(".//data/value/*")))
 
     XML2PY_TYPES.update({
-        'string': lambda x: str(x.text),
+        'string': lambda x: str(x.text).strip(),
         'struct': xml2struct,
         'array': xml2array,
         'base64': lambda x: Binary.fromstring(x.text),
@@ -155,7 +155,8 @@ def xml2py(value):
     })
 
     if isinstance(value, str):
-        return value
+        return value.strip()
+
     return XML2PY_TYPES.get(value.tag)(value)
 
 
