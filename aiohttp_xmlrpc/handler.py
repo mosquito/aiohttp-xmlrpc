@@ -80,7 +80,7 @@ class XMLRPCView(View):
             map(
                 xml2py,
                 xml_request.xpath(
-                    '//params/param/value/* | //params/param/value/text()'
+                    '//params/param/value/* | //params/param/value[not(*)]/text()'
                 )
             )
         )
