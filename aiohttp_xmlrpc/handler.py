@@ -57,10 +57,13 @@ class XMLRPCView(View):
             raise exceptions.ApplicationError('Method %r not found' % method_name)
         return method
 
-    @asyncio.coroutine
-    def _handle(self):
+    def _check_request(self):
         if 'xml' not in self.request.headers.get('Content-Type', ''):
             raise HTTPBadRequest
+
+    @asyncio.coroutine
+    def _handle(self):
+        self._check_request()
 
         body = yield from self.request.read()
         xml_request = self._parse_body(body)
