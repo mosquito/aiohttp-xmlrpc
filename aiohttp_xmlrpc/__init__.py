@@ -11,7 +11,7 @@ author_info = [
     ("Dmitry Orlov", "me@mosquito.su")
 ]
 
-version_info = (0, 4, 4)
+version_info = (0, 4, 5)
 description = "aiohttp XML-RPC server handler and client"
 
 __version__ = ".".join(map(str, version_info))
