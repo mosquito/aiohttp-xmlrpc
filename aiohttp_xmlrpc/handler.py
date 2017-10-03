@@ -26,11 +26,12 @@ class XMLRPCView(View):
 
         return self._make_response(xml_response)
 
-    def _make_response(self, xml_response):
-        response = Response()
+    @classmethod
+    def _make_response(cls, xml_response, status=200, reason=None):
+        response = Response(status=status, reason=reason)
         response.headers["Content-Type"] = "text/xml; charset=utf-8"
 
-        xml_data = self._build_xml(xml_response)
+        xml_data = cls._build_xml(xml_response)
 
         log.debug("Sending response:\n%s", xml_data)
 
@@ -96,7 +97,8 @@ class XMLRPCView(View):
         result = yield from asyncio.coroutine(method)(*args, **kwargs)
         return self._format_success(result)
 
-    def _format_success(self, result):
+    @staticmethod
+    def _format_success(result):
         xml_response = etree.Element("methodResponse")
         xml_params = etree.Element("params")
         xml_param = etree.Element("param")
@@ -108,7 +110,8 @@ class XMLRPCView(View):
         xml_response.append(xml_params)
         return xml_response
 
-    def _format_error(self, exception: Exception):
+    @staticmethod
+    def _format_error(exception: Exception):
         xml_response = etree.Element('methodResponse')
         xml_fault = etree.Element('fault')
         xml_value = etree.Element('value')
