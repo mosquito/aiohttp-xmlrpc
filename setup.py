@@ -31,4 +31,12 @@ setup(
         'aiohttp',
         'lxml',
     ),
+    extras_require={
+        'develop': [
+            'pytest',
+            'pytest-cov',
+            'xmltodict',
+
+        ],
+    }
 )

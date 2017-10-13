@@ -3,6 +3,8 @@ import asyncio
 import aiohttp.client
 import logging
 from lxml import etree
+from multidict import MultiDict
+
 from . import __version__, __pyversion__, exceptions
 from .exceptions import xml2py_exception
 from .common import py2xml, xml2py, schema
@@ -12,11 +14,16 @@ log = logging.getLogger(__name__)
 
 
 class ServerProxy(object):
-    __slots__ = 'client', 'url', 'loop'
+    __slots__ = 'client', 'url', 'loop', 'headers'
 
     USER_AGENT = u'aiohttp XML-RPC client (Python: {0}, version: {1})'.format(__pyversion__, __version__)
 
-    def __init__(self, url, client=None, loop=None, **kwargs):
+    def __init__(self, url, client=None, loop=None, headers=None, **kwargs):
+        self.headers = MultiDict(headers or {})
+
+        self.headers.setdefault('Content-Type', 'text/xml')
+        self.headers.setdefault('User-Agent', self.USER_AGENT)
+
         self.url = str(url)
         self.loop = loop or asyncio.get_event_loop()
         self.client = client or aiohttp.client.ClientSession(loop=self.loop, **kwargs)
@@ -81,15 +88,13 @@ class ServerProxy(object):
         response = yield from self.client.post(
             str(self.url),
             data=etree.tostring(
-                self._make_request(
-                    method_name, *args, **kwargs
-                ), xml_declaration=True
+                self._make_request(method_name, *args, **kwargs),
+                xml_declaration=True
             ),
-            headers={
-                'Content-Type': u'text/xml',
-                'User-Agent': self.USER_AGENT
-            }
+            headers=self.headers,
         )
+
+        response.raise_for_status()
 
         return self._parse_response((yield from response.read()), method_name)
 
