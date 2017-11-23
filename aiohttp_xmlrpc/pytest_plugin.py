@@ -1,6 +1,6 @@
 import asyncio
 import pytest
-from aiohttp.test_utils import TestClient
+from aiohttp.test_utils import TestClient, TestServer
 from .client import ServerProxy
 
 
@@ -13,7 +13,7 @@ def test_rpc_client(loop):
     def _create_from_app_factory(app_factory, *args, **kwargs):
         nonlocal test_client, rpc_client
         app = app_factory(loop, *args, **kwargs)
-        test_client = TestClient(app, loop=loop)
+        test_client = TestClient(TestServer(app), loop=loop)
         yield from test_client.start_server()
 
         rpc_client = ServerProxy(

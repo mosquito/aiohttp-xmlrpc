@@ -64,7 +64,11 @@ def _(value):
 
 @py2xml.register(int)
 def _(value):
-    el = etree.Element('i4')
+    if -2147483648 < value < 2147483647:
+        el = etree.Element('i4')
+    else:
+        el = etree.Element('double')
+
     el.text = str(value)
     return el
 
