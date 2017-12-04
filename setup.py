@@ -24,7 +24,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     package_data={
-        module.__name__: ['xmlrpc.xsd'],
+        module.__name__: ['xmlrpc.rng'],
     },
     packages=find_packages(exclude=('tests',)),
     install_requires=(
