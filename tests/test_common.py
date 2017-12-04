@@ -1,8 +1,10 @@
 import xmltodict
 import pytest
 from datetime import datetime
+from functools import partial
 from lxml import etree
 from aiohttp_xmlrpc.common import py2xml, xml2py, Binary
+from aiohttp_xmlrpc.exceptions import xml2py_exception
 
 
 CASES = [
@@ -57,18 +59,24 @@ CASES = [
     ),
 
     (
-        RuntimeWarning('Test exception'),
+        [[1, 'a']],
         (
-            '<struct>'
-                "<member>"
-                    "<name>faultCode</name>"
-                    "<value><i4>-32000</i4></value>"
-                "</member>"
-                "<member>"
-                    "<name>faultString</name>"
-                    "<value><string>RuntimeWarning('Test exception',)</string></value>"
-                "</member>"
-            "</struct>"
+            "<array>"
+                "<data>"
+                    "<value>"
+                        "<array>"
+                            "<data>"
+                                "<value>"
+                                    "<i4>1</i4>"
+                                "</value>"
+                                "<value>"
+                                    "<string>a</string>"
+                                "</value>"
+                            "</data>"
+                        "</array>"
+                    "</value>"
+                "</data>"
+            "</array>"
         )
     )
 ]
@@ -98,7 +106,8 @@ def normalise_dict(d):
 @pytest.mark.parametrize("expected,data", CASES)
 def test_xml2py(expected, data):
     data = etree.fromstring(data)
-    return (str(data), repr(data)) == (str(expected), repr(expected))
+    result = xml2py(data)
+    assert result == expected
 
 
 @pytest.mark.parametrize("data,expected", CASES)
