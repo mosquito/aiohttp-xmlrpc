@@ -123,7 +123,8 @@ class XMLRPCView(View):
 
     @staticmethod
     def _parse_xml(xml_string):
-        root = etree.fromstring(xml_string)
+        parser = etree.XMLParser(resolve_entities=False)
+        root = etree.fromstring(xml_string, parser)
         schema.assertValid(root)
         return root
 
