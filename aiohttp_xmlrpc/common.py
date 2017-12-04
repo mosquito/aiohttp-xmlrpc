@@ -142,7 +142,7 @@ def xml2py(value):
         )
 
     def xml2array(p):
-        return list(map(xml2py, p.xpath(".//data/value/*")))
+        return list(map(xml2py, p.xpath("./data/value/*")))
 
     XML2PY_TYPES.update({
         'string': lambda x: str(x.text).strip(),
