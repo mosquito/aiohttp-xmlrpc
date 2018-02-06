@@ -14,15 +14,17 @@ log = logging.getLogger(__name__)
 
 
 class ServerProxy(object):
-    __slots__ = 'client', 'url', 'loop', 'headers'
+    __slots__ = 'client', 'url', 'loop', 'headers', 'encoding'
 
     USER_AGENT = u'aiohttp XML-RPC client (Python: {0}, version: {1})'.format(__pyversion__, __version__)
 
-    def __init__(self, url, client=None, loop=None, headers=None, **kwargs):
+    def __init__(self, url, client=None, loop=None, headers=None, encoding=None, **kwargs):
         self.headers = MultiDict(headers or {})
 
         self.headers.setdefault('Content-Type', 'text/xml')
         self.headers.setdefault('User-Agent', self.USER_AGENT)
+
+        self.encoding = encoding
 
         self.url = str(url)
         self.loop = loop or asyncio.get_event_loop()
@@ -89,7 +91,8 @@ class ServerProxy(object):
             str(self.url),
             data=etree.tostring(
                 self._make_request(method_name, *args, **kwargs),
-                xml_declaration=True
+                xml_declaration=True,
+                encoding=self.encoding
             ),
             headers=self.headers,
         )
