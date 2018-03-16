@@ -23,6 +23,9 @@ schema = etree.RelaxNG(file=os.path.join(CURRENT_DIR, 'xmlrpc.rng'))
 class Binary(bytes):
     @classmethod
     def fromstring(cls, data):
+        if data is None:
+            return b''
+
         return cls(base64.b64decode(data))
 
 
