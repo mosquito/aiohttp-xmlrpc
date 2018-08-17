@@ -38,5 +38,6 @@ setup(
             'xmltodict',
 
         ],
+        ':python_version < "3.5"': 'typing >= 3.5.3',
     }
 )
