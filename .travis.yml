@@ -4,10 +4,10 @@ addons:
     sources:
       - deadsnakes
     packages:
-      - python3.5
+      - python3.6
 env:
-  - TOXENV=py34
   - TOXENV=py35
+  - TOXENV=py36
 install:
   - pip install tox 
 script:
