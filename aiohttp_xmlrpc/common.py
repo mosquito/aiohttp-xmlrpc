@@ -1,3 +1,5 @@
+from builtins import ValueError
+
 import base64
 import logging
 import os
@@ -6,7 +8,6 @@ from functools import singledispatch
 from types import GeneratorType
 from lxml import etree
 
-
 NoneType = type(None)
 
 log = logging.getLogger(__name__)
@@ -14,6 +15,7 @@ log = logging.getLogger(__name__)
 CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 TIME_FORMAT = "%Y%m%dT%H:%M:%S"
+TIME_FORMATS = [TIME_FORMAT, "%Y%m%dT%H%M%S"]
 PY2XML_TYPES = {}
 XML2PY_TYPES = {}
 
@@ -32,7 +34,7 @@ class Binary(bytes):
 @singledispatch
 def py2xml(value):
     raise TypeError(("Can't serialise type: {0}."
-                    " Add type {0} via decorator "
+                     " Add type {0} via decorator "
                      "@py2xml.register({0}) ").format(type(value)))
 
 
@@ -132,6 +134,16 @@ def _(x):
     return struct
 
 
+def str_to_time(x):
+    for format in TIME_FORMATS:
+        try:
+            return datetime.strptime(x.text, format)
+        except ValueError:
+            pass
+
+    raise ValueError
+
+
 def xml2py(value):
     def xml2struct(p):
         return dict(
@@ -153,7 +165,7 @@ def xml2py(value):
         'array': xml2array,
         'base64': lambda x: Binary.fromstring(x.text),
         'boolean': lambda x: bool(int(x.text)),
-        'dateTime.iso8601': lambda x: datetime.strptime(x.text, TIME_FORMAT),
+        'dateTime.iso8601': lambda x: str_to_time(x),
         'double': lambda x: float(x.text),
         'integer': lambda x: int(x.text),
         'int': lambda x: int(x.text),

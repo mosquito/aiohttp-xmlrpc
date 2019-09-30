@@ -83,7 +83,7 @@
 					<choice>
 						<data type="dateTime" />
 						<data type="string">
-							<param name="pattern">[0-9]{8}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?</param>
+							<param name="pattern">([0-9]{4})([0-9]{2})([0-9]{2})T([0-9]{2}):?([0-9]{2}):?([0-9]{2})Z?</param>
 						</data>
 					</choice>
 				</element>
