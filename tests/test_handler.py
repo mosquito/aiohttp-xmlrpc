@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 
 import pytest
 from aiohttp import web
@@ -6,7 +7,6 @@ from aiohttp_xmlrpc import handler
 from aiohttp_xmlrpc.exceptions import ApplicationError
 from lxml import etree
 from lxml.builder import E
-
 
 pytest_plugins = (
     'aiohttp.pytest_plugin',
@@ -32,6 +32,9 @@ class XMLRPCMain(handler.XMLRPCView):
 
     def rpc_strings(self, s1, s2):
         return s1 == s2
+
+    def rpc_datetime(self, test_datetime_1, test_datetime_2):
+        return test_datetime_1, test_datetime_2
 
 
 def create_app(loop):
@@ -135,3 +138,36 @@ def test_8_strings_pretty(test_client):
 
     root = etree.fromstring((yield from resp.read()))
     assert root.xpath('//value/boolean/text()')[0] == '1'
+
+
+@asyncio.coroutine
+def test_9_datetime(test_client):
+    resp_date = datetime.datetime.now().strftime("%Y%m%dT%H:%M:%S")
+    test_date = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+    request = E.methodCall(
+        E.methodName('datetime'),
+        E.params(
+            E.param(
+                E.value(
+                    E("dateTime.iso8601", test_date)
+                )
+            ),
+            E.param(
+                E.value(
+                    E("dateTime.iso8601", resp_date)
+                )
+            )
+        )
+    )
+    client = yield from test_client(create_app)
+
+    resp = yield from client.post(
+        '/',
+        data=etree.tostring(request, xml_declaration=True, pretty_print=True),
+        headers={'Content-Type': 'text/xml'}
+    )
+    assert resp.status == 200
+
+    root = etree.fromstring((yield from resp.read()))
+    assert root.xpath('//value/dateTime.iso8601/text()')[0] == resp_date
+    assert root.xpath('//value/dateTime.iso8601/text()')[1] == resp_date

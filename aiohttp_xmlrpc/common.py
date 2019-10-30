@@ -141,7 +141,7 @@ def str_to_time(x):
         except ValueError:
             pass
 
-    raise ValueError
+    raise ValueError("It's impossible to parse dataetime with formats %s", TIME_FORMATS)
 
 
 def xml2py(value):
