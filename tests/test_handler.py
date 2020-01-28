@@ -94,14 +94,14 @@ async def test_7_strings(test_client):
     )
     client = await test_client(create_app)
 
-    resp = await client.post(
+    async with client.post(
         '/',
         data=etree.tostring(request, xml_declaration=True),
         headers={'Content-Type': 'text/xml'}
-    )
-    assert resp.status == 200
+    ) as resp:
+        assert resp.status == 200
 
-    root = etree.fromstring((await resp.read()))
+        root = etree.fromstring((await resp.read()))
     assert root.xpath('//value/boolean/text()')[0] == '1'
 
 
@@ -121,14 +121,14 @@ async def test_8_strings_pretty(test_client):
     )
     client = await test_client(create_app)
 
-    resp = await client.post(
+    async with await client.post(
         '/',
         data=etree.tostring(request, xml_declaration=True, pretty_print=True),
         headers={'Content-Type': 'text/xml'}
-    )
-    assert resp.status == 200
+    ) as resp:
+        assert resp.status == 200
 
-    root = etree.fromstring((await resp.read()))
+        root = etree.fromstring((await resp.read()))
     assert root.xpath('//value/boolean/text()')[0] == '1'
 
 
@@ -152,13 +152,13 @@ async def test_9_datetime(test_client):
     )
     client = await test_client(create_app)
 
-    resp = await client.post(
+    async with client.post(
         '/',
         data=etree.tostring(request, xml_declaration=True, pretty_print=True),
         headers={'Content-Type': 'text/xml'}
-    )
-    assert resp.status == 200
+    ) as resp:
+        assert resp.status == 200
 
-    root = etree.fromstring((await resp.read()))
+        root = etree.fromstring((await resp.read()))
     assert root.xpath('//value/dateTime.iso8601/text()')[0] == resp_date
     assert root.xpath('//value/dateTime.iso8601/text()')[1] == resp_date
