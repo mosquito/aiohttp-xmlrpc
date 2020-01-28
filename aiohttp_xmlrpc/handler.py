@@ -14,10 +14,9 @@ class XMLRPCView(View):
     METHOD_PREFIX = "rpc_"
     DEBUG = False
 
-    @asyncio.coroutine
-    def post(self, *args, **kwargs):
+    async def post(self, *args, **kwargs):
         try:
-            xml_response = yield from self._handle()
+            xml_response = await self._handle()
         except HTTPError:
             raise
         except Exception as e:
@@ -62,11 +61,10 @@ class XMLRPCView(View):
         if 'xml' not in self.request.headers.get('Content-Type', ''):
             raise HTTPBadRequest
 
-    @asyncio.coroutine
-    def _handle(self):
+    async def _handle(self):
         self._check_request()
 
-        body = yield from self.request.read()
+        body = await self.request.read()
         xml_request = self._parse_body(body)
 
         method_name = xml_request.xpath('//methodName[1]')[0].text
@@ -94,7 +92,7 @@ class XMLRPCView(View):
         else:
             kwargs = {}
 
-        result = yield from asyncio.coroutine(method)(*args, **kwargs)
+        result = await asyncio.coroutine(method)(*args, **kwargs)
         return self._format_success(result)
 
     @staticmethod

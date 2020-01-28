@@ -84,9 +84,8 @@ class ServerProxy(object):
         raise exceptions.ParseError('Respond body for method "%s" '
                                     'not contains any response.', method_name)
 
-    @asyncio.coroutine
-    def __remote_call(self, method_name, *args, **kwargs):
-        response = yield from self.client.post(
+    async def __remote_call(self, method_name, *args, **kwargs):
+        async with self.client.post(
             str(self.url),
             data=etree.tostring(
                 self._make_request(method_name, *args, **kwargs),
@@ -94,11 +93,10 @@ class ServerProxy(object):
                 encoding=self.encoding
             ),
             headers=self.headers,
-        )
+        ) as response:
+            response.raise_for_status()
 
-        response.raise_for_status()
-
-        return self._parse_response((yield from response.read()), method_name)
+            return self._parse_response((await response.read()), method_name)
 
     def __getattr__(self, method_name):
         return self[method_name]

@@ -48,44 +48,37 @@ def client(loop, test_rpc_client):
     return loop.run_until_complete(test_rpc_client(create_app))
 
 
-@asyncio.coroutine
-def test_1_test(client):
-    result = yield from client.test()
+async def test_1_test(client):
+    result = await client.test()
     assert result is None
 
 
-@asyncio.coroutine
-def test_2_args(client):
-    result = yield from client.args(1, 2, 3, 4, 5)
+async def test_2_args(client):
+    result = await client.args(1, 2, 3, 4, 5)
     assert result == 5
 
 
-@asyncio.coroutine
-def test_3_kwargs(client):
-    result = yield from client.kwargs(foo=1, bar=2)
+async def test_3_kwargs(client):
+    result = await client.kwargs(foo=1, bar=2)
     assert result == 2
 
 
-@asyncio.coroutine
-def test_4_kwargs(client):
-    result = yield from client.args_kwargs(1, 2, 3, 4, 5, foo=1, bar=2)
+async def test_4_kwargs(client):
+    result = await client.args_kwargs(1, 2, 3, 4, 5, foo=1, bar=2)
     assert result == 7
 
 
-@asyncio.coroutine
-def test_5_exception(client):
+async def test_5_exception(client):
     with pytest.raises(Exception):
-        yield from client.exception()
+        await client.exception()
 
 
-@asyncio.coroutine
-def test_6_unknown_method(client):
+async def test_6_unknown_method(client):
     with pytest.raises(ApplicationError):
-        yield from client['unknown_method']()
+        await client['unknown_method']()
 
 
-@asyncio.coroutine
-def test_7_strings(test_client):
+async def test_7_strings(test_client):
     request = E.methodCall(
         E.methodName('strings'),
         E.params(
@@ -99,21 +92,20 @@ def test_7_strings(test_client):
             )
         )
     )
-    client = yield from test_client(create_app)
+    client = await test_client(create_app)
 
-    resp = yield from client.post(
+    async with client.post(
         '/',
         data=etree.tostring(request, xml_declaration=True),
         headers={'Content-Type': 'text/xml'}
-    )
-    assert resp.status == 200
+    ) as resp:
+        assert resp.status == 200
 
-    root = etree.fromstring((yield from resp.read()))
+        root = etree.fromstring((await resp.read()))
     assert root.xpath('//value/boolean/text()')[0] == '1'
 
 
-@asyncio.coroutine
-def test_8_strings_pretty(test_client):
+async def test_8_strings_pretty(test_client):
     request = E.methodCall(
         E.methodName('strings'),
         E.params(
@@ -127,21 +119,20 @@ def test_8_strings_pretty(test_client):
             )
         )
     )
-    client = yield from test_client(create_app)
+    client = await test_client(create_app)
 
-    resp = yield from client.post(
+    async with await client.post(
         '/',
         data=etree.tostring(request, xml_declaration=True, pretty_print=True),
         headers={'Content-Type': 'text/xml'}
-    )
-    assert resp.status == 200
+    ) as resp:
+        assert resp.status == 200
 
-    root = etree.fromstring((yield from resp.read()))
+        root = etree.fromstring((await resp.read()))
     assert root.xpath('//value/boolean/text()')[0] == '1'
 
 
-@asyncio.coroutine
-def test_9_datetime(test_client):
+async def test_9_datetime(test_client):
     resp_date = datetime.datetime.now().strftime("%Y%m%dT%H:%M:%S")
     test_date = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
     request = E.methodCall(
@@ -159,15 +150,15 @@ def test_9_datetime(test_client):
             )
         )
     )
-    client = yield from test_client(create_app)
+    client = await test_client(create_app)
 
-    resp = yield from client.post(
+    async with client.post(
         '/',
         data=etree.tostring(request, xml_declaration=True, pretty_print=True),
         headers={'Content-Type': 'text/xml'}
-    )
-    assert resp.status == 200
+    ) as resp:
+        assert resp.status == 200
 
-    root = etree.fromstring((yield from resp.read()))
+        root = etree.fromstring((await resp.read()))
     assert root.xpath('//value/dateTime.iso8601/text()')[0] == resp_date
     assert root.xpath('//value/dateTime.iso8601/text()')[1] == resp_date

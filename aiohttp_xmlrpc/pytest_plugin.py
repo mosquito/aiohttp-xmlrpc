@@ -9,12 +9,11 @@ def test_rpc_client(loop):
     test_client = None
     rpc_client = None
 
-    @asyncio.coroutine
-    def _create_from_app_factory(app_factory, *args, **kwargs):
+    async def _create_from_app_factory(app_factory, *args, **kwargs):
         nonlocal test_client, rpc_client
         app = app_factory(loop, *args, **kwargs)
         test_client = TestClient(TestServer(app), loop=loop)
-        yield from test_client.start_server()
+        await test_client.start_server()
 
         rpc_client = ServerProxy(
             '',
