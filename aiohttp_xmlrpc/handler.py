@@ -92,7 +92,12 @@ class XMLRPCView(View):
         else:
             kwargs = {}
 
-        result = await asyncio.coroutine(method)(*args, **kwargs)
+        coroutinefunction = (
+            method
+            if asyncio.iscoroutinefunction(method)
+            else asyncio.coroutine(method)
+        )
+        result = await coroutinefunction(*args, **kwargs)
         return self._format_success(result)
 
     @staticmethod
