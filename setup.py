@@ -39,5 +39,6 @@ setup(
 
         ],
         ':python_version < "3.5"': 'typing >= 3.5.3',
-    }
+    },
+    python_requires='>=3.5',
 )
