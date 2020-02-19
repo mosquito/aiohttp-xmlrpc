@@ -14,11 +14,11 @@ log = logging.getLogger(__name__)
 
 
 class ServerProxy(object):
-    __slots__ = 'client', 'url', 'loop', 'headers', 'encoding'
+    __slots__ = 'client', 'url', 'loop', 'headers', 'encoding', "ssl"
 
     USER_AGENT = u'aiohttp XML-RPC client (Python: {0}, version: {1})'.format(__pyversion__, __version__)
 
-    def __init__(self, url, client=None, headers=None, encoding=None, **kwargs):
+    def __init__(self, url, ssl=True, client=None, headers=None, encoding=None, **kwargs):
         self.headers = MultiDict(headers or {})
 
         self.headers.setdefault('Content-Type', 'text/xml')
@@ -27,6 +27,7 @@ class ServerProxy(object):
         self.encoding = encoding
 
         self.url = str(url)
+        self.ssl = ssl
         self.client = client or aiohttp.client.ClientSession(**kwargs)
 
     @staticmethod
@@ -93,6 +94,7 @@ class ServerProxy(object):
                 encoding=self.encoding
             ),
             headers=self.headers,
+            ssl=self.ssl
         ) as response:
             response.raise_for_status()
 
