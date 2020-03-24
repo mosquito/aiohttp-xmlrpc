@@ -107,5 +107,5 @@ class ServerProxy(object):
 
         return method
 
-    def close(self):
-        return self.client.close()
+    async def close(self):
+        return await self.client.close()

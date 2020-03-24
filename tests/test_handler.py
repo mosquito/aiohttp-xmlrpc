@@ -38,7 +38,7 @@ class XMLRPCMain(handler.XMLRPCView):
 
 
 def create_app(loop):
-    app = web.Application(loop=loop)
+    app = web.Application()
     app.router.add_route('*', '/', XMLRPCMain)
     return app
 
@@ -78,7 +78,7 @@ async def test_6_unknown_method(client):
         await client['unknown_method']()
 
 
-async def test_7_strings(test_client):
+async def test_7_strings(aiohttp_client):
     request = E.methodCall(
         E.methodName('strings'),
         E.params(
@@ -92,7 +92,7 @@ async def test_7_strings(test_client):
             )
         )
     )
-    client = await test_client(create_app)
+    client = await aiohttp_client(create_app)
 
     async with client.post(
         '/',
@@ -105,7 +105,7 @@ async def test_7_strings(test_client):
     assert root.xpath('//value/boolean/text()')[0] == '1'
 
 
-async def test_8_strings_pretty(test_client):
+async def test_8_strings_pretty(aiohttp_client):
     request = E.methodCall(
         E.methodName('strings'),
         E.params(
@@ -119,7 +119,7 @@ async def test_8_strings_pretty(test_client):
             )
         )
     )
-    client = await test_client(create_app)
+    client = await aiohttp_client(create_app)
 
     async with await client.post(
         '/',
@@ -132,7 +132,7 @@ async def test_8_strings_pretty(test_client):
     assert root.xpath('//value/boolean/text()')[0] == '1'
 
 
-async def test_9_datetime(test_client):
+async def test_9_datetime(aiohttp_client):
     resp_date = datetime.datetime.now().strftime("%Y%m%dT%H:%M:%S")
     test_date = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
     request = E.methodCall(
@@ -150,7 +150,7 @@ async def test_9_datetime(test_client):
             )
         )
     )
-    client = await test_client(create_app)
+    client = await aiohttp_client(create_app)
 
     async with client.post(
         '/',
