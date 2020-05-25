@@ -57,13 +57,12 @@ class ServerProxy(object):
 
         return root
 
-    @staticmethod
-    def _parse_response(body, method_name):
+    def _parse_response(self, body, method_name):
         try:
             if log.getEffectiveLevel() <= logging.DEBUG:
                 log.debug("Server response: \n%s", body.decode())
 
-            parser = etree.XMLParser(huge_tree=ServerProxy.huge_tree)
+            parser = etree.XMLParser(huge_tree=self.huge_tree)
             response = etree.fromstring(body, parser)
             schema.assertValid(response)
         except etree.DocumentInvalid:
