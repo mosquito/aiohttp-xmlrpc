@@ -14,17 +14,18 @@ log = logging.getLogger(__name__)
 
 
 class ServerProxy(object):
-    __slots__ = 'client', 'url', 'loop', 'headers', 'encoding'
+    __slots__ = 'client', 'url', 'loop', 'headers', 'encoding', 'huge_tree'
 
     USER_AGENT = u'aiohttp XML-RPC client (Python: {0}, version: {1})'.format(__pyversion__, __version__)
 
-    def __init__(self, url, client=None, headers=None, encoding=None, **kwargs):
+    def __init__(self, url, client=None, headers=None, encoding=None, huge_tree=False, **kwargs):
         self.headers = MultiDict(headers or {})
 
         self.headers.setdefault('Content-Type', 'text/xml')
         self.headers.setdefault('User-Agent', self.USER_AGENT)
 
         self.encoding = encoding
+        self.huge_tree = huge_tree
 
         self.url = str(url)
         self.client = client or aiohttp.client.ClientSession(**kwargs)
@@ -62,7 +63,8 @@ class ServerProxy(object):
             if log.getEffectiveLevel() <= logging.DEBUG:
                 log.debug("Server response: \n%s", body.decode())
 
-            response = etree.fromstring(body)
+            parser = etree.XMLParser(huge_tree=ServerProxy.huge_tree)
+            response = etree.fromstring(body, parser)
             schema.assertValid(response)
         except etree.DocumentInvalid:
             raise ValueError("Invalid body")
