@@ -20,7 +20,6 @@ jobs:
         linter:
           - lint
           - checkdoc
-          - mypy
 
     steps:
       - uses: actions/checkout@v2
