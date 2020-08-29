@@ -70,7 +70,10 @@ class ServerProxy(object):
 
         result = response.xpath('//params/param/value/*')
         if result:
-            return xml2py(result[0])
+            if len(result) < 2:
+                return xml2py(result[0])
+
+            return [xml2py(item) for item in result]
 
         fault = response.xpath('//fault/value/*')
         if fault:
