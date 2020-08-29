@@ -1,12 +1,14 @@
-from builtins import ValueError
-
+import asyncio
 import base64
 import logging
 import os
+from builtins import ValueError
 from datetime import datetime
-from functools import singledispatch
+from functools import singledispatch, wraps
 from types import GeneratorType
+
 from lxml import etree
+
 
 NoneType = type(None)
 
@@ -179,4 +181,26 @@ def xml2py(value):
     return XML2PY_TYPES.get(value.tag)(value)
 
 
-__all__ = ('py2xml', 'xml2py', 'schema')
+def awaitable(func):
+    # Avoid python 3.8+ warning
+    if asyncio.iscoroutinefunction(func):
+        return func
+
+    async def awaiter(obj):
+        return obj
+
+    @wraps(func)
+    def wrap(*args, **kwargs):
+        result = func(*args, **kwargs)
+
+        if hasattr(result, "__await__"):
+            return result
+        if asyncio.iscoroutine(result) or asyncio.isfuture(result):
+            return result
+
+        return awaiter(result)
+
+    return wrap
+
+
+__all__ = ('py2xml', 'xml2py', 'schema', 'awaitable')

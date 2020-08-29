@@ -1,4 +1,3 @@
-# encoding: utf-8
 import sys
 
 try:
@@ -11,7 +10,7 @@ author_info = [
     ("Dmitry Orlov", "me@mosquito.su")
 ]
 
-version_info = (0, 8, 1)
+version_info = (0, 9, 0)
 description = "aiohttp XML-RPC server handler and client"
 
 __version__ = ".".join(map(str, version_info))

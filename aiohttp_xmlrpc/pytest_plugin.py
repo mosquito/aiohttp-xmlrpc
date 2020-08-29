@@ -1,6 +1,6 @@
-import asyncio
 import pytest
 from aiohttp.test_utils import TestClient, TestServer
+
 from .client import ServerProxy
 
 

@@ -1,11 +1,10 @@
-# encoding: utf-8
 import logging
-import asyncio
+
 from aiohttp.web import View, Response, HTTPBadRequest, HTTPError
 from lxml import etree
-from . import exceptions
-from .common import schema, xml2py, py2xml
 
+from . import exceptions
+from .common import schema, xml2py, py2xml, awaitable
 
 log = logging.getLogger(__name__)
 
@@ -92,7 +91,7 @@ class XMLRPCView(View):
         else:
             kwargs = {}
 
-        result = await asyncio.coroutine(method)(*args, **kwargs)
+        result = await awaitable(method)(*args, **kwargs)
         return self._format_success(result)
 
     @staticmethod

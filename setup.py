@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# encoding: utf-8
 from __future__ import absolute_import, print_function
 from setuptools import setup, find_packages
 import aiohttp_xmlrpc as module

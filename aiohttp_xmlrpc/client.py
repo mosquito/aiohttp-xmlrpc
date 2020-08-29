@@ -1,13 +1,12 @@
-# encoding: utf-8
-import asyncio
-import aiohttp.client
 import logging
+
+import aiohttp.client
 from lxml import etree
 from multidict import MultiDict
 
 from . import __version__, __pyversion__, exceptions
-from .exceptions import xml2py_exception
 from .common import py2xml, xml2py, schema
+from .exceptions import xml2py_exception
 
 
 log = logging.getLogger(__name__)
@@ -112,10 +111,10 @@ class ServerProxy(object):
         return method
 
     def __aenter__(self):
-        return type(self.client).__aenter__(self.client)
+        return self.client.__aenter__()
 
-    def __aexit__(self, *args):
-        return type(self.client).__aexit__(self.client, *args)
+    def __aexit__(self, exc_type, exc_val, exc_tb):
+        return self.client.__aexit__(exc_type, exc_val, exc_tb)
 
     def close(self):
         return self.client.close()
