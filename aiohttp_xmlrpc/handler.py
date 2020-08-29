@@ -1,10 +1,10 @@
-# encoding: utf-8
 import logging
-import asyncio
-from aiohttp.web import View, Response, HTTPBadRequest, HTTPError
+
+from aiohttp.web import HTTPBadRequest, HTTPError, Response, View
 from lxml import etree
+
 from . import exceptions
-from .common import schema, xml2py, py2xml
+from .common import awaitable, py2xml, schema, xml2py
 
 
 log = logging.getLogger(__name__)
@@ -51,14 +51,14 @@ class XMLRPCView(View):
                 "Can't find method %s%s in %r",
                 self.METHOD_PREFIX,
                 method_name,
-                self.__class__.__name__
+                self.__class__.__name__,
             )
 
-            raise exceptions.ApplicationError('Method %r not found' % method_name)
+            raise exceptions.ApplicationError("Method %r not found" % method_name)
         return method
 
     def _check_request(self):
-        if 'xml' not in self.request.headers.get('Content-Type', ''):
+        if "xml" not in self.request.headers.get("Content-Type", ""):
             raise HTTPBadRequest
 
     async def _handle(self):
@@ -67,7 +67,7 @@ class XMLRPCView(View):
         body = await self.request.read()
         xml_request = self._parse_body(body)
 
-        method_name = xml_request.xpath('//methodName[1]')[0].text
+        method_name = xml_request.xpath("//methodName[1]")[0].text
         method = self._lookup_method(method_name)
 
         log.info(
@@ -75,16 +75,16 @@ class XMLRPCView(View):
             method_name,
             method.__module__,
             method.__class__.__name__,
-            method.__name__
+            method.__name__,
         )
 
         args = list(
             map(
                 xml2py,
                 xml_request.xpath(
-                    '//params/param/value/* | //params/param/value[not(*)]/text()'
-                )
-            )
+                    "//params/param/value/* | //params/param/value[not(*)]/text()",
+                ),
+            ),
         )
 
         if args and isinstance(args[-1], dict):
@@ -92,7 +92,7 @@ class XMLRPCView(View):
         else:
             kwargs = {}
 
-        result = await asyncio.coroutine(method)(*args, **kwargs)
+        result = await awaitable(method)(*args, **kwargs)
         return self._format_success(result)
 
     @staticmethod
@@ -110,9 +110,9 @@ class XMLRPCView(View):
 
     @staticmethod
     def _format_error(exception: Exception):
-        xml_response = etree.Element('methodResponse')
-        xml_fault = etree.Element('fault')
-        xml_value = etree.Element('value')
+        xml_response = etree.Element("methodResponse")
+        xml_fault = etree.Element("fault")
+        xml_value = etree.Element("value")
 
         xml_value.append(py2xml(exception))
         xml_fault.append(xml_value)
@@ -132,5 +132,5 @@ class XMLRPCView(View):
             tree,
             xml_declaration=True,
             encoding="utf-8",
-            pretty_print=cls.DEBUG
+            pretty_print=cls.DEBUG,
         )

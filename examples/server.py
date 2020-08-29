@@ -1,6 +1,5 @@
 from aiohttp import web
 from aiohttp_xmlrpc import handler
-from tornado.testing import *
 
 
 class XMLRPCExample(handler.XMLRPCView):

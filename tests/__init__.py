@@ -1,4 +1,4 @@
-from aiohttp_xmlrpc import common, handler, client
+from aiohttp_xmlrpc import client, common, handler
 
 
 __all__ = "common", "handler", "client"
