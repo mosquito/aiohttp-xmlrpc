@@ -171,6 +171,6 @@ async def test_9_datetime(test_client):
     assert root.xpath("//value/dateTime.iso8601/text()")[1] == resp_date
 
 
-async def test_3_kwargs(client):
+async def test_10_future(client):
     result = await client.future()
     assert result == 42
