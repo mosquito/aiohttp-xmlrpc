@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import re
 
 import pytest
 from aiohttp import web
@@ -15,26 +16,38 @@ pytest_plugins = (
 
 
 class XMLRPCMain(handler.XMLRPCView):
-    def rpc_test(self):
+    async def rpc_test(self):
         return None
 
-    def rpc_args(self, *args):
+    async def rpc_args(self, *args):
         return len(args)
 
-    def rpc_kwargs(self, **kwargs):
+    async def rpc_kwargs(self, **kwargs):
         return len(kwargs)
 
-    def rpc_args_kwargs(self, *args, **kwargs):
+    async def rpc_args_kwargs(self, *args, **kwargs):
         return len(args) + len(kwargs)
 
-    def rpc_exception(self):
+    async def rpc_exception(self):
         raise Exception("YEEEEEE!!!")
 
-    def rpc_strings(self, s1, s2):
+    async def rpc_strings(self, s1, s2):
         return s1 == s2
 
-    def rpc_datetime(self, test_datetime_1, test_datetime_2):
+    async def rpc_datetime(self, test_datetime_1, test_datetime_2):
         return test_datetime_1, test_datetime_2
+
+    @staticmethod
+    def rpc_implicit_coro_yield_from(*args, **kwargs):
+        async def example(v):
+            return v
+
+        return (yield from example((args, kwargs)))
+
+    @staticmethod
+    def rpc_implicit_coro_fn(*args, **kwargs):
+        return ((args, kwargs))
+
 
 
 def create_app(loop):
@@ -162,3 +175,11 @@ async def test_9_datetime(test_client):
         root = etree.fromstring((await resp.read()))
     assert root.xpath('//value/dateTime.iso8601/text()')[0] == resp_date
     assert root.xpath('//value/dateTime.iso8601/text()')[1] == resp_date
+
+
+@pytest.mark.parametrize(
+    "method_name", ["implicit_coro_yield_from", "implicit_coro_fn"]
+)
+async def test_10_implicit_coro(client, method_name):
+    result = await getattr(client, method_name)("ham", "spam", eggs="bacon")
+    assert result == [["ham", "spam"], {"eggs": "bacon"}]
