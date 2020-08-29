@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 
 import pytest
@@ -36,9 +37,15 @@ class XMLRPCMain(handler.XMLRPCView):
     def rpc_datetime(self, test_datetime_1, test_datetime_2):
         return test_datetime_1, test_datetime_2
 
+    def rpc_future(self):
+        f = asyncio.Future()
+        loop = asyncio.get_event_loop()
+        loop.call_soon(f.set_result, 42)
+        return f
+
 
 def create_app(loop):
-    app = web.Application(loop=loop)
+    app = web.Application()
     app.router.add_route("*", "/", XMLRPCMain)
     return app
 
@@ -162,3 +169,8 @@ async def test_9_datetime(test_client):
         root = etree.fromstring((await resp.read()))
     assert root.xpath("//value/dateTime.iso8601/text()")[0] == resp_date
     assert root.xpath("//value/dateTime.iso8601/text()")[1] == resp_date
+
+
+async def test_3_kwargs(client):
+    result = await client.future()
+    assert result == 42
