@@ -1,10 +1,8 @@
 from datetime import datetime
-from functools import partial
 
 import pytest
 import xmltodict
 from aiohttp_xmlrpc.common import Binary, py2xml, xml2py
-from aiohttp_xmlrpc.exceptions import xml2py_exception
 from lxml import etree
 
 

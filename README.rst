@@ -1,8 +1,8 @@
 AIOHTTP XMLRPC
 ==============
 
-.. image:: https://travis-ci.org/mosquito/aiohttp-xmlrpc.svg
-    :target: https://travis-ci.org/mosquito/aiohttp-xmlrpc
+.. image:: https://github.com/mosquito/aiohttp-xmlrpc/workflows/tox/badge.svg
+    :target: https://github.com/mosquito/aiohttp-xmlrpc/actions
 
 .. image:: https://img.shields.io/pypi/v/aiohttp-xmlrpc.svg
     :target: https://pypi.python.org/pypi/aiohttp-xmlrpc/

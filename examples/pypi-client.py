@@ -4,6 +4,7 @@ from aiohttp_xmlrpc.client import ServerProxy
 loop = asyncio.get_event_loop()
 client = ServerProxy("https://pypi.python.org/pypi", loop=loop)
 
+
 async def main():
     pkg = 'aiohttp-xmlrpc'
 

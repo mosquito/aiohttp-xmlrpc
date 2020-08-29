@@ -18,4 +18,3 @@ __version__ = ".".join(map(str, version_info))
 __author__ = ", ".join("{0} <{1}>".format(*author) for author in author_info)
 __pyversion__ = ".".join(map(str, sys.version_info))
 __license__ = "MIT"
-
