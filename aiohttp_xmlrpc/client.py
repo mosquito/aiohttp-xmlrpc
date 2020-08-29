@@ -108,5 +108,11 @@ class ServerProxy(object):
 
         return method
 
+    def __aenter__(self):
+        return type(self.client).__aenter__(self.client)
+
+    def __aexit__(self, *args):
+        return type(self.client).__aexit__(self.client, *args)
+
     def close(self):
         return self.client.close()
