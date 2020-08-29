@@ -1,14 +1,15 @@
-import xmltodict
-import pytest
 from datetime import datetime
 from functools import partial
-from lxml import etree
-from aiohttp_xmlrpc.common import py2xml, xml2py, Binary
+
+import pytest
+import xmltodict
+from aiohttp_xmlrpc.common import Binary, py2xml, xml2py
 from aiohttp_xmlrpc.exceptions import xml2py_exception
+from lxml import etree
 
 
 CASES = [
-    (Binary("you can't read this!".encode()), '<base64>eW91IGNhbid0IHJlYWQgdGhpcyE=</base64>'),
+    (Binary("you can't read this!".encode()), "<base64>eW91IGNhbid0IHJlYWQgdGhpcyE=</base64>"),
 
     (-12.53, "<double>-12.53</double>"),
 
@@ -16,7 +17,7 @@ CASES = [
 
     (
         datetime(year=1998, month=7, day=17, hour=14, minute=8, second=55),
-        "<dateTime.iso8601>19980717T14:08:55</dateTime.iso8601>"
+        "<dateTime.iso8601>19980717T14:08:55</dateTime.iso8601>",
     ),
 
     (42, "<i4>42</i4>"),
@@ -43,11 +44,11 @@ CASES = [
                     "</value>"
                 "</data>"
             "</array>"
-        )
+        ),
     ),
 
     (
-        {'foo': 1},
+        {"foo": 1},
         (
             "<struct>"
               "<member>"
@@ -55,11 +56,11 @@ CASES = [
                 "<value><i4>1</i4></value>"
               "</member>"
             "</struct>"
-        )
+        ),
     ),
 
     (
-        [[1, 'a']],
+        [[1, "a"]],
         (
             "<array>"
                 "<data>"
@@ -77,8 +78,8 @@ CASES = [
                     "</value>"
                 "</data>"
             "</array>"
-        )
-    )
+        ),
+    ),
 ]
 
 
@@ -89,12 +90,12 @@ def normalise_dict(d):
     """
     out = {}
     for k, v in dict(d).items():
-        if hasattr(v, 'iteritems'):
+        if hasattr(v, "iteritems"):
             out[k] = normalise_dict(v)
         elif isinstance(v, list):
             out[k] = []
             for item in sorted(v):
-                if hasattr(item, 'iteritems'):
+                if hasattr(item, "iteritems"):
                     out[k].append(normalise_dict(item))
                 else:
                     out[k].append(item)
@@ -116,9 +117,9 @@ def test_py2xml(data, expected):
     b = expected
 
     if not isinstance(a, str):
-        a = etree.tostring(a, encoding='utf-8')
+        a = etree.tostring(a, encoding="utf-8")
     if not isinstance(b, str):
-        b = etree.tostring(b, encoding='utf-8')
+        b = etree.tostring(b, encoding="utf-8")
 
     _a = normalise_dict(xmltodict.parse(a))
     _b = normalise_dict(xmltodict.parse(b))

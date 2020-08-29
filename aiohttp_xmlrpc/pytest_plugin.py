@@ -16,9 +16,9 @@ def test_rpc_client(loop):
         await test_client.start_server()
 
         rpc_client = ServerProxy(
-            '',
+            "",
             loop=loop,
-            client=test_client
+            client=test_client,
         )
         return rpc_client
 

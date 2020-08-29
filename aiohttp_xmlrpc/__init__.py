@@ -1,13 +1,14 @@
 import sys
 
+
 try:
-    __import__('__pypy__')
+    __import__("__pypy__")
     IS_PYPY = True
 except ImportError:
     IS_PYPY = False
 
 author_info = [
-    ("Dmitry Orlov", "me@mosquito.su")
+    ("Dmitry Orlov", "me@mosquito.su"),
 ]
 
 version_info = (0, 9, 0)

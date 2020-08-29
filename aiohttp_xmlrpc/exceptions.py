@@ -4,8 +4,8 @@ from .common import py2xml
 
 
 __all__ = (
-    'XMLRPCError', 'ApplicationError', 'InvalidCharacterError', 'ParseError', 'ServerError',
-    'SystemError', 'TransportError', 'UnsupportedEncodingError'
+    "XMLRPCError", "ApplicationError", "InvalidCharacterError", "ParseError", "ServerError",
+    "SystemError", "TransportError", "UnsupportedEncodingError",
 )
 
 
@@ -21,7 +21,7 @@ class XMLRPCError(Exception):
         return self.__class__.__name__
 
     def __repr__(self):
-        return '<[{0.code}] {0.name}({0.message})>'.format(self)
+        return "<[{0.code}] {0.name}({0.message})>".format(self)
 
 
 class ParseError(XMLRPCError):
@@ -116,17 +116,17 @@ def _(value):
             code = __EXCEPTION_TYPES[klass]
             break
 
-    struct = etree.Element('struct')
+    struct = etree.Element("struct")
 
     for key, value in (("faultCode", code), ("faultString", reason)):
-        member = etree.Element('member')
+        member = etree.Element("member")
         struct.append(member)
 
-        key_el = etree.Element('name')
+        key_el = etree.Element("name")
         key_el.text = key
         member.append(key_el)
 
-        value_el = etree.Element('value')
+        value_el = etree.Element("value")
         value_el.append(py2xml(value))
         member.append(value_el)
 

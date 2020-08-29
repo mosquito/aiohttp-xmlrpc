@@ -8,9 +8,10 @@ from aiohttp_xmlrpc.exceptions import ApplicationError
 from lxml import etree
 from lxml.builder import E
 
+
 pytest_plugins = (
-    'aiohttp.pytest_plugin',
-    'aiohttp_xmlrpc.pytest_plugin',
+    "aiohttp.pytest_plugin",
+    "aiohttp_xmlrpc.pytest_plugin",
 )
 
 
@@ -39,7 +40,7 @@ class XMLRPCMain(handler.XMLRPCView):
 
 def create_app(loop):
     app = web.Application(loop=loop)
-    app.router.add_route('*', '/', XMLRPCMain)
+    app.router.add_route("*", "/", XMLRPCMain)
     return app
 
 
@@ -75,90 +76,90 @@ async def test_5_exception(client):
 
 async def test_6_unknown_method(client):
     with pytest.raises(ApplicationError):
-        await client['unknown_method']()
+        await client["unknown_method"]()
 
 
 async def test_7_strings(test_client):
     request = E.methodCall(
-        E.methodName('strings'),
+        E.methodName("strings"),
         E.params(
             E.param(
-                E.value('Some string')
+                E.value("Some string"),
             ),
             E.param(
                 E.value(
-                    E.string('Some string')
-                )
-            )
-        )
+                    E.string("Some string"),
+                ),
+            ),
+        ),
     )
     client = await test_client(create_app)
 
     async with client.post(
-        '/',
+        "/",
         data=etree.tostring(request, xml_declaration=True),
-        headers={'Content-Type': 'text/xml'}
+        headers={"Content-Type": "text/xml"},
     ) as resp:
         assert resp.status == 200
 
         root = etree.fromstring((await resp.read()))
-    assert root.xpath('//value/boolean/text()')[0] == '1'
+    assert root.xpath("//value/boolean/text()")[0] == "1"
 
 
 async def test_8_strings_pretty(test_client):
     request = E.methodCall(
-        E.methodName('strings'),
+        E.methodName("strings"),
         E.params(
             E.param(
-                E.value('Some string')
+                E.value("Some string"),
             ),
             E.param(
                 E.value(
-                    E.string('Some string')
-                )
-            )
-        )
+                    E.string("Some string"),
+                ),
+            ),
+        ),
     )
     client = await test_client(create_app)
 
     async with await client.post(
-        '/',
+        "/",
         data=etree.tostring(request, xml_declaration=True, pretty_print=True),
-        headers={'Content-Type': 'text/xml'}
+        headers={"Content-Type": "text/xml"},
     ) as resp:
         assert resp.status == 200
 
         root = etree.fromstring((await resp.read()))
-    assert root.xpath('//value/boolean/text()')[0] == '1'
+    assert root.xpath("//value/boolean/text()")[0] == "1"
 
 
 async def test_9_datetime(test_client):
     resp_date = datetime.datetime.now().strftime("%Y%m%dT%H:%M:%S")
     test_date = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
     request = E.methodCall(
-        E.methodName('datetime'),
+        E.methodName("datetime"),
         E.params(
             E.param(
                 E.value(
-                    E("dateTime.iso8601", test_date)
-                )
+                    E("dateTime.iso8601", test_date),
+                ),
             ),
             E.param(
                 E.value(
-                    E("dateTime.iso8601", resp_date)
-                )
-            )
-        )
+                    E("dateTime.iso8601", resp_date),
+                ),
+            ),
+        ),
     )
     client = await test_client(create_app)
 
     async with client.post(
-        '/',
+        "/",
         data=etree.tostring(request, xml_declaration=True, pretty_print=True),
-        headers={'Content-Type': 'text/xml'}
+        headers={"Content-Type": "text/xml"},
     ) as resp:
         assert resp.status == 200
 
         root = etree.fromstring((await resp.read()))
-    assert root.xpath('//value/dateTime.iso8601/text()')[0] == resp_date
-    assert root.xpath('//value/dateTime.iso8601/text()')[1] == resp_date
+    assert root.xpath("//value/dateTime.iso8601/text()")[0] == resp_date
+    assert root.xpath("//value/dateTime.iso8601/text()")[1] == resp_date
