@@ -1,4 +1,8 @@
+import asyncio
+import inspect
 import logging
+from abc import ABCMeta
+from types import MappingProxyType
 
 from aiohttp.web import HTTPBadRequest, HTTPError, Response, View
 from lxml import etree
@@ -10,9 +14,54 @@ from .common import awaitable, py2xml, schema, xml2py
 log = logging.getLogger(__name__)
 
 
-class XMLRPCView(View):
+# noinspection PyUnresolvedReferences
+class XMLRPCViewMeta(ABCMeta):
+    def __new__(cls, clsname, superclasses, attributedict):
+        mapping_key = "__method_arg_mapping__"
+        allowed_key = "__allowed_methods__"
+        attributedict[mapping_key] = dict()
+        attributedict[allowed_key] = dict()
+
+        for superclass in superclasses:
+            attributedict[mapping_key].update(
+                getattr(superclass, mapping_key, {}),
+            )
+
+        instance = super(XMLRPCViewMeta, cls).__new__(
+            cls, clsname, superclasses, attributedict,
+        )
+
+        argmapping = getattr(instance, mapping_key)
+        allowed_methods = getattr(instance, allowed_key)
+
+        for key in attributedict.keys():
+            if not key.startswith(instance.METHOD_PREFIX):
+                continue
+
+            value = getattr(instance, key)
+            method_name = key.replace(instance.METHOD_PREFIX, "", 1)
+            allowed_methods[method_name] = key
+            argmapping[method_name] = inspect.getargspec(value)
+
+        setattr(
+            instance,
+            mapping_key,
+            MappingProxyType(argmapping),
+        )
+
+        setattr(
+            instance,
+            allowed_key,
+            MappingProxyType(allowed_methods),
+        )
+
+        return instance
+
+
+class XMLRPCView(View, metaclass=XMLRPCViewMeta):
     METHOD_PREFIX = "rpc_"
     DEBUG = False
+    THREAD_POOL_EXECUTOR = None
 
     async def post(self, *args, **kwargs):
         try:
@@ -37,25 +86,25 @@ class XMLRPCView(View):
         response.body = xml_data
         return response
 
-    def _parse_body(self, body):
+    async def _parse_body(self, body):
+        loop = asyncio.get_event_loop()
         try:
-            return self._parse_xml(body)
+            return await loop.run_in_executor(
+                self.THREAD_POOL_EXECUTOR,
+                self._parse_xml,
+                body,
+            )
         except etree.DocumentInvalid:
             raise HTTPBadRequest
 
+    # noinspection PyUnresolvedReferences
     def _lookup_method(self, method_name):
-        method = getattr(self, "{0}{1}".format(self.METHOD_PREFIX, method_name), None)
-
-        if not callable(method):
-            log.warning(
-                "Can't find method %s%s in %r",
-                self.METHOD_PREFIX,
-                method_name,
-                self.__class__.__name__,
+        if method_name not in self.__allowed_methods__:
+            raise exceptions.ApplicationError(
+                "Method %r not found" % method_name,
             )
 
-            raise exceptions.ApplicationError("Method %r not found" % method_name)
-        return method
+        return awaitable(getattr(self, self.__allowed_methods__[method_name]))
 
     def _check_request(self):
         if "xml" not in self.request.headers.get("Content-Type", ""):
@@ -65,7 +114,7 @@ class XMLRPCView(View):
         self._check_request()
 
         body = await self.request.read()
-        xml_request = self._parse_body(body)
+        xml_request = await self._parse_body(body)
 
         method_name = xml_request.xpath("//methodName[1]")[0].text
         method = self._lookup_method(method_name)
@@ -87,12 +136,12 @@ class XMLRPCView(View):
             ),
         )
 
-        if args and isinstance(args[-1], dict):
+        kwargs = {}
+        argspec = self.__method_arg_mapping__[method_name]
+        if argspec.keywords and isinstance(args[-1], dict):
             kwargs = args.pop(-1)
-        else:
-            kwargs = {}
 
-        result = await awaitable(method)(*args, **kwargs)
+        result = await method(*args, **kwargs)
         return self._format_success(result)
 
     @staticmethod

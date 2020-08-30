@@ -43,6 +43,12 @@ class XMLRPCMain(handler.XMLRPCView):
         loop.call_soon(f.set_result, 42)
         return f
 
+    def rpc_dict_args(self, a, b, d):
+        return (a, b, d)
+
+    def rpc_dict_kwargs(self, d, **kw):
+        return (d, kw)
+
 
 def create_app(loop):
     app = web.Application()
@@ -174,3 +180,11 @@ async def test_9_datetime(test_client):
 async def test_10_future(client):
     result = await client.future()
     assert result == 42
+
+
+async def test_11_dict_args(client):
+    result = await client.dict_args(41, 42, {"foo": "bar"})
+    assert result == [41, 42, {"foo": "bar"}]
+
+    result = await client.dict_kwargs({"foo": "bar"}, spam="egg")
+    assert result == [{"foo": "bar"}, {"spam": "egg"}]
