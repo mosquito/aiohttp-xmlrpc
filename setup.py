@@ -35,7 +35,6 @@ setup(
             "pytest",
             "pytest-cov",
             "xmltodict",
-
         ],
     },
     python_requires=">=3.5",

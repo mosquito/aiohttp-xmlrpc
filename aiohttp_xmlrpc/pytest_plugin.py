@@ -1,7 +1,6 @@
 import warnings
 
 import pytest
-from aiohttp.abc import Application
 from aiohttp.test_utils import TestClient, TestServer
 
 from .client import ServerProxy
