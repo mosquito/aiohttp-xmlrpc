@@ -1,8 +1,7 @@
+import asyncio
 import inspect
 import logging
-import asyncio
 from abc import ABCMeta
-from functools import partial
 from types import MappingProxyType
 
 from aiohttp.web import HTTPBadRequest, HTTPError, Response, View
@@ -25,11 +24,11 @@ class XMLRPCViewMeta(ABCMeta):
 
         for superclass in superclasses:
             attributedict[mapping_key].update(
-                getattr(superclass, mapping_key, {})
+                getattr(superclass, mapping_key, {}),
             )
 
         instance = super(XMLRPCViewMeta, cls).__new__(
-            cls, clsname, superclasses, attributedict
+            cls, clsname, superclasses, attributedict,
         )
 
         argmapping = getattr(instance, mapping_key)
@@ -47,13 +46,13 @@ class XMLRPCViewMeta(ABCMeta):
         setattr(
             instance,
             mapping_key,
-            MappingProxyType(argmapping)
+            MappingProxyType(argmapping),
         )
 
         setattr(
             instance,
             allowed_key,
-            MappingProxyType(allowed_methods)
+            MappingProxyType(allowed_methods),
         )
 
         return instance
@@ -93,7 +92,7 @@ class XMLRPCView(View, metaclass=XMLRPCViewMeta):
             return await loop.run_in_executor(
                 self.THREAD_POOL_EXECUTOR,
                 self._parse_xml,
-                body
+                body,
             )
         except etree.DocumentInvalid:
             raise HTTPBadRequest
@@ -102,7 +101,7 @@ class XMLRPCView(View, metaclass=XMLRPCViewMeta):
     def _lookup_method(self, method_name):
         if method_name not in self.__allowed_methods__:
             raise exceptions.ApplicationError(
-                "Method %r not found" % method_name
+                "Method %r not found" % method_name,
             )
 
         return awaitable(getattr(self, self.__allowed_methods__[method_name]))
