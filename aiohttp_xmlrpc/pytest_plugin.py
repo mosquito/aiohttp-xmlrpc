@@ -1,4 +1,7 @@
+import warnings
+
 import pytest
+from aiohttp.abc import Application
 from aiohttp.test_utils import TestClient, TestServer
 
 from .client import ServerProxy
@@ -6,6 +9,9 @@ from .client import ServerProxy
 
 @pytest.yield_fixture
 def test_rpc_client(loop):
+    warnings.warn("Deprecated, use aiohttp_xmlrpc_client fixture instead",
+                  DeprecationWarning)
+
     test_client = None
     rpc_client = None
 
@@ -31,3 +37,13 @@ def test_rpc_client(loop):
     if test_client:
         loop.run_until_complete(test_client.close())
         test_client = None
+
+
+@pytest.fixture
+def aiohttp_xmlrpc_client(loop, aiohttp_client):
+    async def factory(app_factory, path="/", **kwargs):
+        client = await aiohttp_client(app_factory)
+        proxy = ServerProxy(path, client, **kwargs)
+        return proxy
+
+    return factory

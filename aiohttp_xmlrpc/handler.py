@@ -45,7 +45,7 @@ class XMLRPCViewMeta(ABCMeta):
             value = getattr(instance, key)
             method_name = key.replace(instance.METHOD_PREFIX, "", 1)
             allowed_methods[method_name] = key
-            argmapping[method_name] = inspect.getargspec(value)
+            argmapping[method_name] = inspect.getfullargspec(value)
 
         setattr(
             instance,
@@ -142,7 +142,7 @@ class XMLRPCView(View, metaclass=XMLRPCViewMeta):
 
         kwargs = {}
         argspec = self.__method_arg_mapping__[method_name]
-        if argspec.keywords and isinstance(args[-1], dict):
+        if argspec.varkw and isinstance(args[-1], dict):
             kwargs = args.pop(-1)
 
         result = await method(*args, **kwargs)
