@@ -27,6 +27,10 @@ class XMLRPCViewMeta(ABCMeta):
                 getattr(superclass, mapping_key, {}),
             )
 
+            attributedict[allowed_key].update(
+                getattr(superclass, allowed_key, {}),
+            )
+
         instance = super(XMLRPCViewMeta, cls).__new__(
             cls, clsname, superclasses, attributedict,
         )
