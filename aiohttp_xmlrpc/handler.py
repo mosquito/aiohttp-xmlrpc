@@ -142,7 +142,7 @@ class XMLRPCView(View, metaclass=XMLRPCViewMeta):
 
         kwargs = {}
         argspec = self.__method_arg_mapping__[method_name]
-        if argspec.varkw and isinstance(args[-1], dict):
+        if argspec.varkw or argspec.kwonlyargs and isinstance(args[-1], dict):
             kwargs = args.pop(-1)
 
         result = await method(*args, **kwargs)

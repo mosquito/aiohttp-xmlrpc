@@ -49,6 +49,9 @@ class XMLRPCMain(handler.XMLRPCView):
     def rpc_dict_kwargs(self, d, **kw):
         return (d, kw)
 
+    def rpc_dict_kw_only_args(self, d, *, foo, **kw):
+        return (d, foo, kw)
+
 
 class XMLRPCChild(XMLRPCMain):
     def rpc_child(self):
@@ -204,3 +207,10 @@ async def test_12_inherited(aiohttp_xmlrpc_client):
 
     result = await client.child()
     assert result == 42
+
+
+async def test_13_kw_only_args(client):
+    result = await client.dict_kw_only_args(
+        {"foo": "bar"}, foo=32, spam="egg"
+    )
+    assert result == [{"foo": "bar"}, 32, {"spam": "egg"}]
