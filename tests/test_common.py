@@ -80,6 +80,42 @@ CASES = [
     ),
 ]
 
+CASES_COMPAT = [
+    ("Hello world!", "Hello world!"),
+    (
+        [[1, "a"]],
+        (
+            "<array>"
+                "<data>"
+                    "<value>"
+                        "<array>"
+                            "<data>"
+                                "<value>"
+                                    "<i4>1</i4>"
+                                "</value>"
+                                "<value>"
+                                    "a"
+                                "</value>"
+                            "</data>"
+                        "</array>"
+                    "</value>"
+                "</data>"
+            "</array>"
+        ),
+    ),
+    (
+        {"foo": "bar"},
+        (
+            "<struct>"
+              "<member>"
+                "<name>foo</name>"
+                "<value>bar</value>"
+              "</member>"
+            "</struct>"
+        ),
+    ),
+]
+
 
 def normalise_dict(d):
     """
@@ -102,7 +138,7 @@ def normalise_dict(d):
     return out
 
 
-@pytest.mark.parametrize("expected,data", CASES)
+@pytest.mark.parametrize("expected,data", CASES + CASES_COMPAT)
 def test_xml2py(expected, data):
     data = etree.fromstring(data)
     result = xml2py(data)

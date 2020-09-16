@@ -70,14 +70,14 @@ class ServerProxy(object):
         except etree.DocumentInvalid:
             raise ValueError("Invalid body")
 
-        result = response.xpath("//params/param/value/*")
+        result = response.xpath("//params/param/value")
         if result:
             if len(result) < 2:
                 return xml2py(result[0])
 
             return [xml2py(item) for item in result]
 
-        fault = response.xpath("//fault/value/*")
+        fault = response.xpath("//fault/value")
         if fault:
             err = xml2py(fault[0])
 

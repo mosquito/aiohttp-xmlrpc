@@ -153,13 +153,20 @@ def xml2py(value):
                 lambda x: (x[0].text, x[1]),
                 zip(
                     p.xpath("./member/name"),
-                    map(xml2py, p.xpath("./member/value/*")),
+                    map(xml2py, p.xpath("./member/value")),
                 ),
             ),
         )
 
     def xml2array(p):
-        return list(map(xml2py, p.xpath("./data/value/*")))
+        return list(map(xml2py, p.xpath("./data/value")))
+
+    def unwrap_value(p):
+        try:
+            value = next(p.iterchildren())
+        except StopIteration:
+            value = p.text or ''
+        return xml2py(value)
 
     XML2PY_TYPES.update({
         "string": lambda x: str(x.text).strip(),
@@ -173,6 +180,7 @@ def xml2py(value):
         "int": lambda x: int(x.text),
         "i4": lambda x: int(x.text),
         "nil": lambda x: None,
+        "value": unwrap_value,
     })
 
     if isinstance(value, str):
