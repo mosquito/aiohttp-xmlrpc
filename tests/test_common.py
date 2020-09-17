@@ -81,37 +81,41 @@ CASES = [
 ]
 
 CASES_COMPAT = [
-    ("Hello world!", "Hello world!"),
+    ("Hello world!", "<value>Hello world!</value>"),
     (
         [[1, "a"]],
         (
-            "<array>"
-                "<data>"
-                    "<value>"
-                        "<array>"
-                            "<data>"
-                                "<value>"
-                                    "<i4>1</i4>"
-                                "</value>"
-                                "<value>"
-                                    "a"
-                                "</value>"
-                            "</data>"
-                        "</array>"
-                    "</value>"
-                "</data>"
-            "</array>"
+            "<value>"
+                "<array>"
+                    "<data>"
+                        "<value>"
+                            "<array>"
+                                "<data>"
+                                    "<value>"
+                                        "<i4>1</i4>"
+                                    "</value>"
+                                    "<value>"
+                                        "a"
+                                    "</value>"
+                                "</data>"
+                            "</array>"
+                        "</value>"
+                    "</data>"
+                "</array>"
+            "</value>"
         ),
     ),
     (
         {"foo": "bar"},
         (
-            "<struct>"
-              "<member>"
-                "<name>foo</name>"
-                "<value>bar</value>"
-              "</member>"
-            "</struct>"
+            "<value>"
+                "<struct>"
+                    "<member>"
+                        "<name>foo</name>"
+                        "<value>bar</value>"
+                    "</member>"
+                "</struct>"
+            "</value>"
         ),
     ),
 ]
