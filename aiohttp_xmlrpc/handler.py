@@ -134,9 +134,7 @@ class XMLRPCView(View, metaclass=XMLRPCViewMeta):
         args = list(
             map(
                 xml2py,
-                xml_request.xpath(
-                    "//params/param/value/* | //params/param/value[not(*)]/text()",
-                ),
+                xml_request.xpath("//params/param/value"),
             ),
         )
 
