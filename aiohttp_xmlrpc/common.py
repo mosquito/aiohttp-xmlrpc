@@ -169,7 +169,7 @@ def xml2py(value):
         return xml2py(value)
 
     XML2PY_TYPES.update({
-        "string": lambda x: str(x.text).strip(),
+        "string": lambda x: str(x.text or "").strip(),
         "struct": xml2struct,
         "array": xml2array,
         "base64": lambda x: Binary.fromstring(x.text),

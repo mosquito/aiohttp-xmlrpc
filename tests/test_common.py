@@ -26,6 +26,8 @@ CASES = [
 
     (None, "<nil/>"),
 
+    ("", "<string/>"),
+
     (
         [1404, "Something here", 1],
         (
