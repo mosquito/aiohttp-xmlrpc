@@ -41,4 +41,7 @@ setup(
         ],
     },
     python_requires=">=3.5",
+    project_urls={
+        "Source": "https://github.com/mosquito/aiohttp-xmlrpc",
+    },
 )
