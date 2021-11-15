@@ -12,6 +12,20 @@ from .exceptions import xml2py_exception
 log = logging.getLogger(__name__)
 
 
+class _Method:
+    # some magic to bind an XML-RPC method to an RPC server.
+    # supports "nested" methods (e.g. examples.getStateName)
+    def __init__(self, send, name):
+        self.__send = send
+        self.__name = name
+
+    def __getattr__(self, name):
+        return _Method(self.__send, "%s.%s" % (self.__name, name))
+
+    def __call__(self, *args, **kwargs):
+        return self.__send(self.__name, args, kwargs)
+
+
 class ServerProxy(object):
     __slots__ = "client", "url", "loop", "headers", "encoding", "huge_tree"
 
@@ -107,13 +121,12 @@ class ServerProxy(object):
             return self._parse_response((await response.read()), method_name)
 
     def __getattr__(self, method_name):
-        return self[method_name]
-
-    def __getitem__(self, method_name):
-        def method(*args, **kwargs):
-            return self.__remote_call(method_name, *args, **kwargs)
-
-        return method
+        # Trick to keep the "close" method available
+        if method_name == "close":
+            return self.__close
+        else:
+            # Magic method dispatcher
+            return _Method(self.__remote_call, method_name)
 
     def __aenter__(self):
         return self.client.__aenter__()
@@ -121,5 +134,5 @@ class ServerProxy(object):
     def __aexit__(self, exc_type, exc_val, exc_tb):
         return self.client.__aexit__(exc_type, exc_val, exc_tb)
 
-    def close(self):
+    def __close(self):
         return self.client.close()
