@@ -23,7 +23,7 @@ class _Method:
         return _Method(self.__send, "%s.%s" % (self.__name, name))
 
     def __call__(self, *args, **kwargs):
-        return self.__send(self.__name, args, kwargs)
+        return self.__send(self.__name, *args, **kwargs)
 
 
 class ServerProxy(object):
