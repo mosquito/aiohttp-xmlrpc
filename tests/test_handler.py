@@ -97,7 +97,7 @@ async def test_5_exception(client):
 
 async def test_6_unknown_method(client):
     with pytest.raises(ApplicationError):
-        await client["unknown_method"]()
+        await client.unknown_method()
 
 
 async def test_7_strings(aiohttp_client):
