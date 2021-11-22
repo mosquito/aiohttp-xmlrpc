@@ -1,6 +1,9 @@
 AIOHTTP XMLRPC
 ==============
 
+.. image:: https://coveralls.io/repos/github/mosquito/aiohttp-xmlrpc/badge.svg?branch=master
+   :target: https://coveralls.io/github/mosquito/aiohttp-xmlrpc?branch=master
+
 .. image:: https://github.com/mosquito/aiohttp-xmlrpc/workflows/tox/badge.svg
     :target: https://github.com/mosquito/aiohttp-xmlrpc/actions
 
