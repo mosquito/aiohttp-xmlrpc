@@ -17,6 +17,7 @@ pytest_plugins = (
 
 
 class XMLRPCMain(handler.XMLRPCView):
+
     def rpc_test(self):
         return None
 
@@ -54,13 +55,18 @@ class XMLRPCMain(handler.XMLRPCView):
         return (d, foo, kw)
 
     @rename("method_with.new_name")
-    def rpc_ranamed(self):
+    def rpc_renamed(self):
         return "renamed_function"
 
 
 class XMLRPCChild(XMLRPCMain):
+
     def rpc_child(self):
         return 42
+
+    @rename("child.test")
+    def rpc_child_nested_method(self):
+        return "My name has the nested format and I am in child class"
 
 
 def create_app(loop):
@@ -224,3 +230,10 @@ async def test_13_kw_only_args(client):
 async def test_14_method_renaming(client):
     result = await client.method_with.new_name()
     assert result == "renamed_function"
+
+
+async def test_15_nested_method_in_child(aiohttp_xmlrpc_client):
+    client = await aiohttp_xmlrpc_client(create_app, path="/clone")
+
+    result = await client.child.test()
+    assert result == "My name has the nested format and I am in child class"
