@@ -8,6 +8,7 @@ from aiohttp_xmlrpc.exceptions import ApplicationError
 from lxml import etree
 from lxml.builder import E
 
+from aiohttp_xmlrpc.handler import rename
 
 pytest_plugins = (
     "aiohttp.pytest_plugin",
@@ -51,6 +52,10 @@ class XMLRPCMain(handler.XMLRPCView):
 
     def rpc_dict_kw_only_args(self, d, *, foo, **kw):
         return (d, foo, kw)
+
+    @rename("method_with.new_name")
+    def rpc_ranamed(self):
+        return "renamed_function"
 
 
 class XMLRPCChild(XMLRPCMain):
@@ -214,3 +219,8 @@ async def test_13_kw_only_args(client):
         {"foo": "bar"}, foo=32, spam="egg"
     )
     assert result == [{"foo": "bar"}, 32, {"spam": "egg"}]
+
+
+async def test_14_method_renaming(client):
+    result = await client.method_with.new_name()
+    assert result == "renamed_function"
