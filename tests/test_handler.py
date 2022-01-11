@@ -8,6 +8,7 @@ from aiohttp_xmlrpc.exceptions import ApplicationError
 from lxml import etree
 from lxml.builder import E
 
+from aiohttp_xmlrpc.handler import rename
 
 pytest_plugins = (
     "aiohttp.pytest_plugin",
@@ -16,6 +17,7 @@ pytest_plugins = (
 
 
 class XMLRPCMain(handler.XMLRPCView):
+
     def rpc_test(self):
         return None
 
@@ -52,10 +54,19 @@ class XMLRPCMain(handler.XMLRPCView):
     def rpc_dict_kw_only_args(self, d, *, foo, **kw):
         return (d, foo, kw)
 
+    @rename("method_with.new_name")
+    def rpc_renamed(self):
+        return "renamed_function"
+
 
 class XMLRPCChild(XMLRPCMain):
+
     def rpc_child(self):
         return 42
+
+    @rename("child.test")
+    def rpc_child_nested_method(self):
+        return "My name has the nested format and I am in child class"
 
 
 def create_app(loop):
@@ -214,3 +225,15 @@ async def test_13_kw_only_args(client):
         {"foo": "bar"}, foo=32, spam="egg"
     )
     assert result == [{"foo": "bar"}, 32, {"spam": "egg"}]
+
+
+async def test_14_method_renaming(client):
+    result = await client.method_with.new_name()
+    assert result == "renamed_function"
+
+
+async def test_15_nested_method_in_child(aiohttp_xmlrpc_client):
+    client = await aiohttp_xmlrpc_client(create_app, path="/clone")
+
+    result = await client.child.test()
+    assert result == "My name has the nested format and I am in child class"

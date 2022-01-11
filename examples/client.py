@@ -7,14 +7,13 @@ client = ServerProxy("http://127.0.0.1:8080/", loop=loop)
 
 
 async def main():
-    print(await client.test())
+    # 'nested.test' method call
+    print(await client.nested.test())
 
-    # Or via __getitem__
-    method = client['args']
-    print(await method(1, 2, 3))
+    # 'args' method call
+    print(await client.args(1, 2, 3))
 
-    client.close()
-
+    await client.close()
 
 if __name__ == "__main__":
     loop.run_until_complete(main())

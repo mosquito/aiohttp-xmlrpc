@@ -31,10 +31,12 @@ Server example
 
     from aiohttp import web
     from aiohttp_xmlrpc import handler
-    from tornado.testing import *
+    from aiohttp_xmlrpc.handler import rename
 
 
     class XMLRPCExample(handler.XMLRPCView):
+
+        @rename("nested.test")
         def rpc_test(self):
             return None
 
@@ -47,6 +49,7 @@ Server example
         def rpc_args_kwargs(self, *args, **kwargs):
             return len(args) + len(kwargs)
 
+        @rename("nested.exception")
         def rpc_exception(self):
             raise Exception("YEEEEEE!!!")
 
@@ -56,6 +59,7 @@ Server example
 
     if __name__ == "__main__":
         web.run_app(app)
+
 
 
 
@@ -72,11 +76,11 @@ Client example
     client = ServerProxy("http://127.0.0.1:8080/", loop=loop)
 
     async def main():
-        print(await client.test())
+        # 'nested.test' method call
+        print(await client.nested.test())
 
-        # Or via __getitem__
-        method = client['args']
-        print(await method(1, 2, 3))
+        # 'args' method call
+        print(await client.args(1, 2, 3))
 
         client.close()
 

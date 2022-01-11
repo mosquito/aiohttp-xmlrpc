@@ -42,9 +42,16 @@ class XMLRPCViewMeta(ABCMeta):
             if not key.startswith(instance.METHOD_PREFIX):
                 continue
 
+            # Get the value of the corresponding function
             value = getattr(instance, key)
-            method_name = key.replace(instance.METHOD_PREFIX, "", 1)
+
+            method_name = getattr(value, "__xmlrpc_name__", None)
+            if method_name is None:
+                method_name = key.replace(instance.METHOD_PREFIX, "", 1)
+
             allowed_methods[method_name] = key
+
+            # Add the arg mapping in all cases
             argmapping[method_name] = inspect.getfullargspec(value)
 
         setattr(
@@ -185,3 +192,10 @@ class XMLRPCView(View, metaclass=XMLRPCViewMeta):
             encoding="utf-8",
             pretty_print=cls.DEBUG,
         )
+
+
+def rename(new_name):
+    def decorator(func):
+        func.__xmlrpc_name__ = new_name
+        return func
+    return decorator
