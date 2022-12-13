@@ -128,8 +128,9 @@ class ServerProxy(object):
             # Magic method dispatcher
             return _Method(self.__remote_call, method_name)
 
-    def __aenter__(self):
-        return self.client.__aenter__()
+    async def __aenter__(self):
+        await self.client.__aenter__()
+        return self
 
     def __aexit__(self, exc_type, exc_val, exc_tb):
         return self.client.__aexit__(exc_type, exc_val, exc_tb)
